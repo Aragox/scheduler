@@ -6,14 +6,19 @@ sudo apt-get install libgtk-3-dev
 
 La siguiente línea compilará el código C.
 
-gcc -o gladewin main.c -Wall `pkg-config --cflags --libs gtk+-3.0` -export-dynamic
+make
 
-Donde main.c es el nombre del archivo en el que se guarda el código C y gladewin es el nombre del archivo output ejecutable.
+Donde "app" es el nombre del archivo output ejecutable.
 
 CORRER EL CÓDIGO
-En la terminal en el directorio del proyecto, correr:
+En la terminal en el directorio /scheduler, correr:
 
-./gladewin
+./app
 
-Donde gladewin es el nombre del archivo output ejecutable.
+Donde "app" es el nombre del archivo output ejecutable.
+
+LIMPIAR EL PROYECTO
+Para borrar los archivos objeto y ejecutables, correr:
+
+make clean
 

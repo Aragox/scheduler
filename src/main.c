@@ -7,8 +7,7 @@ int main(int argc, char *argv[])
 
     gtk_init(&argc, &argv);
 
-    builder = gtk_builder_new();
-    gtk_builder_add_from_file (builder, "scheduler.glade", NULL);
+    builder = gtk_builder_new_from_file("glade/scheduler.glade");
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
     gtk_builder_connect_signals(builder, NULL);
