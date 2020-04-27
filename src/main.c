@@ -1,5 +1,8 @@
 #include <gtk/gtk.h>
 
+//Algorithm 
+int algorithm = 0;
+
 // Custom structure that holds pointers to widgets and user variables
 typedef struct {
     // Add pointers to widgets below
@@ -39,6 +42,52 @@ int main(int argc, char *argv[])
 {
 }*/
 
+// called when fcfs algorithm is choosed
+void on_fcfs_clicked(GtkButton *button, app_widgets *app_wdgts)
+{
+algorithm = 1;
+}
+
+// called when sjf algorithm is choosed
+void on_sjf_clicked(GtkButton *button, app_widgets *app_wdgts)
+{
+algorithm = 2;
+}
+
+// called when rr algorithm is choosed
+void on_rr_clicked(GtkButton *button, app_widgets *app_wdgts)
+{
+algorithm = 3;
+}
+
+// called when ps algorithm is choosed
+void on_ps_clicked(GtkButton *button, app_widgets *app_wdgts)
+{
+algorithm = 4;
+}
+
+// called when "ps with rr" algorithm is choosed
+void on_psrr_clicked(GtkButton *button, app_widgets *app_wdgts)
+{
+algorithm = 5;
+}
+
+// called when mqs algorithm is choosed
+void on_mqs_clicked(GtkButton *button, app_widgets *app_wdgts)
+{
+algorithm = 6;
+}
+
+// called when mfqs algorithm is choosed
+void on_mfqs_clicked(GtkButton *button, app_widgets *app_wdgts)
+{
+algorithm = 7;
+}
+
+/*###########################################################################################################################################
+---------------------------------------------------------------------------------------------------------------------------------------------
+#############################################################################################################################################*/
+//Funciones que cierran el programa
 // called when window is closed
 void on_window_main_destroy()
 {

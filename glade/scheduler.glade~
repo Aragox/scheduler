@@ -87,6 +87,7 @@
                 <property name="margin_right">60</property>
                 <property name="margin_top">3</property>
                 <property name="margin_bottom">3</property>
+                <signal name="clicked" handler="on_fcfs_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -104,6 +105,7 @@
                 <property name="margin_right">60</property>
                 <property name="margin_top">3</property>
                 <property name="margin_bottom">3</property>
+                <signal name="clicked" handler="on_sjf_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -121,6 +123,7 @@
                 <property name="margin_right">60</property>
                 <property name="margin_top">3</property>
                 <property name="margin_bottom">3</property>
+                <signal name="clicked" handler="on_rr_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -138,6 +141,7 @@
                 <property name="margin_right">60</property>
                 <property name="margin_top">3</property>
                 <property name="margin_bottom">3</property>
+                <signal name="clicked" handler="on_ps_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -155,6 +159,7 @@
                 <property name="margin_right">60</property>
                 <property name="margin_top">3</property>
                 <property name="margin_bottom">3</property>
+                <signal name="clicked" handler="on_psrr_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -172,6 +177,7 @@
                 <property name="margin_right">60</property>
                 <property name="margin_top">3</property>
                 <property name="margin_bottom">3</property>
+                <signal name="clicked" handler="on_mqs_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -189,6 +195,7 @@
                 <property name="margin_right">60</property>
                 <property name="margin_top">3</property>
                 <property name="margin_bottom">3</property>
+                <signal name="clicked" handler="on_mfqs_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
