@@ -44,3 +44,9 @@ void on_window_main_destroy()
 {
     gtk_main_quit();
 }
+
+// called when the exit button of the main window is clicked
+void on_exit_main_clicked()
+{
+    gtk_main_quit();
+}
