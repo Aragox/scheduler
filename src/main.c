@@ -1,12 +1,12 @@
 #include <gtk/gtk.h>
 
-//Algorithm 
+//Stores the id of the selected algorithm
 int algorithm = 0;
 
-// Custom structure that holds pointers to widgets and user variables
+// Custom structure that holds pointers to widgets and user variables 
 typedef struct {
     // Add pointers to widgets below
-    //GtkWidget *w_x;
+    GtkWidget *main_label;
 } app_widgets;
 
 int main(int argc, char *argv[])
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
     // Get pointers to widgets here
-    //widgets->w_x  = GTK_WIDGET(gtk_builder_get_object(builder, "x"));
+    widgets->main_label = GTK_WIDGET(gtk_builder_get_object(builder, "main_label"));
     
      // Widgets pointer are passed to all widget handler functions as the user_data parameter
     gtk_builder_connect_signals(builder, widgets);
@@ -42,46 +42,61 @@ int main(int argc, char *argv[])
 {
 }*/
 
+//Function that test/show if the algorithm is selected (in the main menu's buttons)
+void test_main_button(app_widgets *app_wdgts) 
+{
+  char buffer[50]; 
+  sprintf(buffer, "algoritmo: %d", algorithm); 
+  gtk_label_set_text((GtkLabel*)app_wdgts->main_label, buffer);
+}
+
 // called when fcfs algorithm is choosed
 void on_fcfs_clicked(GtkButton *button, app_widgets *app_wdgts)
 {
-algorithm = 1;
+  algorithm = 1;
+  test_main_button(app_wdgts); 
 }
 
 // called when sjf algorithm is choosed
 void on_sjf_clicked(GtkButton *button, app_widgets *app_wdgts)
 {
-algorithm = 2;
+  algorithm = 2;
+  test_main_button(app_wdgts); 
 }
 
 // called when rr algorithm is choosed
 void on_rr_clicked(GtkButton *button, app_widgets *app_wdgts)
 {
-algorithm = 3;
+  algorithm = 3;
+  test_main_button(app_wdgts);
 }
 
 // called when ps algorithm is choosed
 void on_ps_clicked(GtkButton *button, app_widgets *app_wdgts)
 {
-algorithm = 4;
+  algorithm = 4;
+  test_main_button(app_wdgts);
 }
 
 // called when "ps with rr" algorithm is choosed
 void on_psrr_clicked(GtkButton *button, app_widgets *app_wdgts)
 {
-algorithm = 5;
+  algorithm = 5;
+  test_main_button(app_wdgts);
 }
 
 // called when mqs algorithm is choosed
 void on_mqs_clicked(GtkButton *button, app_widgets *app_wdgts)
 {
-algorithm = 6;
+  algorithm = 6;
+  test_main_button(app_wdgts);
 }
 
 // called when mfqs algorithm is choosed
 void on_mfqs_clicked(GtkButton *button, app_widgets *app_wdgts)
 {
-algorithm = 7;
+  algorithm = 7;
+  test_main_button(app_wdgts);
 }
 
 /*###########################################################################################################################################
