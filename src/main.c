@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 
 //To check if a file is valid
-int file_valid = 0;
+int file_valid = 1; // Currently set to TRUE... for texting
 
 //To check if a file was opened from the dialog
 int a_file_was_opened = 0;
@@ -19,6 +19,8 @@ typedef struct {
     GtkWidget *error_label; //Label in the error window
 } app_widgets;
 
+int open_message_dialog ();
+void open_resolve_window (app_widgets *app_wdgts);  
 
 /*###########################################################################################################################################
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -52,6 +54,8 @@ void on_window_destroy (GtkWidget *widget, app_widgets *app_wdgts)
 // close the entire application.
 {
         app_wdgts->windows = g_slist_remove (app_wdgts->windows, widget); //Remove the window from the list
+
+        gtk_widget_set_sensitive ((GtkWidget*)GTK_WINDOW(window_main), TRUE); // Enable main window
         
         if (g_slist_length (app_wdgts->windows) == 0)
         {
@@ -68,61 +72,9 @@ void close_emergent_window(GtkWidget *widget, app_widgets *app_wdgts)
 {
   gtk_window_close ((GtkWindow*)g_slist_nth(app_wdgts->windows, 0)->data); //Closes the window
   app_wdgts->windows = g_slist_remove (app_wdgts->windows, widget); //Remove the window from the list
+  gtk_widget_set_sensitive ((GtkWidget*)GTK_WINDOW(window_main), TRUE); // Enable main window
 }
 
-
-/*###########################################################################################################################################
----------------------------------------------------------------------------------------------------------------------------------------------
-#############################################################################################################################################*/
-/*FUNCTIONS TO CREATE/OPEN A POPUP WINDOW*/
-
-void open_resolve_window_or_error_window (app_widgets *app_wdgts)
-//Function that makes the pop-up window where the algorithm runs, appear; or to make the pop-up of error window
-{
-  if (g_slist_length (app_wdgts->windows) == 2){ //Sólo forma la ventaja emergente si sólo está presente la ventana original
-     GtkBuilder      *builder;
-
-     builder = gtk_builder_new();
-
-     if (file_valid) { // File is valid
-     GtkWidget       *window_resolve;
-     GtkWidget       *accept_button;
-     GtkWidget       *cancel_button;
-
-     gtk_builder_add_from_file (builder, "glade/window_resolve.glade", NULL);
-
-     window_resolve = GTK_WIDGET(gtk_builder_get_object(builder, "window_resolve"));
-
-     app_wdgts->windows = g_slist_prepend (app_wdgts->windows, window_resolve);  //Agregar ventana a la lista
-
-     g_signal_connect (G_OBJECT (window_resolve), "destroy", G_CALLBACK (on_window_destroy), app_wdgts);  //Conectar señales
-
-     accept_button = GTK_WIDGET(gtk_builder_get_object(builder, "accept_resolve"));
-     g_signal_connect (G_OBJECT (accept_button), "clicked", G_CALLBACK (close_emergent_window), app_wdgts);   
-     cancel_button = GTK_WIDGET(gtk_builder_get_object(builder, "cancel_resolve"));
-     g_signal_connect (G_OBJECT (cancel_button), "clicked", G_CALLBACK (close_emergent_window), app_wdgts);
-	                               
-     gtk_widget_show_all (window_resolve);
-
-     } else { // File is invalid
-     GtkWidget       *window_error;
-     GtkWidget       *accept_button;
-
-     gtk_builder_add_from_file (builder, "glade/window_error.glade", NULL);
-
-     window_error = GTK_WIDGET(gtk_builder_get_object(builder, "window_error"));
-
-     app_wdgts->windows = g_slist_prepend (app_wdgts->windows, window_error);  //Agregar ventana a la lista
-
-     g_signal_connect (G_OBJECT (window_error), "destroy", G_CALLBACK (on_window_destroy), app_wdgts);  //Conectar señales
-   
-     accept_button = GTK_WIDGET(gtk_builder_get_object(builder, "accept_error"));
-     g_signal_connect (G_OBJECT (accept_button), "clicked", G_CALLBACK (close_emergent_window), app_wdgts);
-	                               
-     gtk_widget_show_all (window_error);
-     }    
-  }
-}
 /*###########################################################################################################################################
 ---------------------------------------------------------------------------------------------------------------------------------------------
 #############################################################################################################################################*/
@@ -215,7 +167,7 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
     char *filename;
     GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
     filename = gtk_file_chooser_get_filename (chooser);
-   // getfiledata(filename, app_wdgts); //AQUÍ SE OBTIENE LOS DATOS DEL ARCHIVO PERO NO ESTÁ HECHO AÚN
+   // getfiledata(filename, app_wdgts); //AQUÍ SE OBTIENE LOS DATOS DEL ARCHIVO PERO NO ESTÁ HECHO ACORDE AÚN
     g_free (filename);
     a_file_was_opened = 1;
   }
@@ -223,9 +175,27 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
   gtk_widget_destroy (dialog);
 
   if (a_file_was_opened) { //Open next window
-     open_resolve_window_or_error_window (app_wdgts);
+     if (!file_valid) { //Open file is not valid 
+        open_message_dialog ();
+     } else { //Open file is valid
+        open_resolve_window (app_wdgts);
+     }
   }
 
+  return 0;
+}
+
+int open_message_dialog ()
+{
+  GtkWidget *dialog;
+  GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
+  dialog = gtk_message_dialog_new (GTK_WINDOW(window_main),
+                                 flags,
+                                 GTK_MESSAGE_ERROR,
+                                 GTK_BUTTONS_CLOSE,
+                                 "Open file is not valid for algorithm X");
+  gtk_dialog_run (GTK_DIALOG (dialog));
+  gtk_widget_destroy (dialog); 
   return 0;
 }
 
@@ -299,7 +269,38 @@ void on_mfqs_clicked(GtkButton *button, app_widgets *app_wdgts)
   readfile(button, app_wdgts);
 }
 
+/*###########################################################################################################################################
+---------------------------------------------------------------------------------------------------------------------------------------------
+#############################################################################################################################################*/
+/*FUNCTIONS TO CREATE/OPEN A POPUP WINDOW*/
 
+void open_resolve_window (app_widgets *app_wdgts)
+//Function that makes the pop-up window where the algorithm runs, appear
+{
+  if (g_slist_length (app_wdgts->windows) == 2){ //Sólo forma la ventaja emergente si sólo está presente la ventana original
+     GtkBuilder      *builder;
+
+     builder = gtk_builder_new();
+
+     GtkWidget       *window_resolve;
+     GtkWidget       *cancel_button;
+
+     gtk_builder_add_from_file (builder, "glade/window_resolve.glade", NULL);
+
+     window_resolve = GTK_WIDGET(gtk_builder_get_object(builder, "window_resolve"));
+
+     app_wdgts->windows = g_slist_prepend (app_wdgts->windows, window_resolve);  //Agregar ventana a la lista
+
+     g_signal_connect (G_OBJECT (window_resolve), "destroy", G_CALLBACK (on_window_destroy), app_wdgts);  //Conectar señales
+
+     cancel_button = GTK_WIDGET(gtk_builder_get_object(builder, "cancel_resolve"));
+     g_signal_connect (G_OBJECT (cancel_button), "clicked", G_CALLBACK (close_emergent_window), app_wdgts);
+	                               
+     gtk_widget_show_all (window_resolve);
+
+     gtk_widget_set_sensitive ((GtkWidget*)GTK_WINDOW(window_main), FALSE); // Disable main window
+  }
+}
 
 /*###########################################################################################################################################
 ---------------------------------------------------------------------------------------------------------------------------------------------
