@@ -1,5 +1,11 @@
 #include <gtk/gtk.h>
 
+//To check if a file is valid
+int file_valid = 0;
+
+//To check if a file was opened from the dialog
+int a_file_was_opened = 0;
+
 //Stores the id of the selected algorithm
 int algorithm = 0;
 
@@ -10,19 +16,19 @@ typedef struct {
     // Add pointers to widgets below
     GSList *windows;      //List of windows
     GtkWidget *main_label; //Label in the main window 
-    GtkWidget *filechooser_label; //Label in the file chooser dialog
+    GtkWidget *error_label; //Label in the error window
 } app_widgets;
 
 
 /*###########################################################################################################################################
 ---------------------------------------------------------------------------------------------------------------------------------------------
 #############################################################################################################################################*/
-/*FUNCTION THAT DISPLAYS WARNING MESSAGE IN THE FILE CHOOSER'S LABEL*/
+/*FUNCTION THAT DISPLAYS WARNING MESSAGE IN THE ERROR WINDOW'S LABEL*/
 
 void update_message(app_widgets *app_wdgts, gpointer data)
 //Display warning message on the label with id tag filevalid_label, in file chooser dialog
 {
- gtk_label_set_text(GTK_LABEL(app_wdgts->filechooser_label), data);
+ gtk_label_set_text(GTK_LABEL(app_wdgts->error_label), data);
 }
 /*###########################################################################################################################################
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -70,21 +76,52 @@ void close_emergent_window(GtkWidget *widget, app_widgets *app_wdgts)
 #############################################################################################################################################*/
 /*FUNCTIONS TO CREATE/OPEN A POPUP WINDOW*/
 
-void isvalid_clicked (GtkWidget *widget, app_widgets *app_wdgts)
-//Function that makes the pop-up window where the algorithm runs, appear
+void open_resolve_window_or_error_window (app_widgets *app_wdgts)
+//Function that makes the pop-up window where the algorithm runs, appear; or to make the pop-up of error window
 {
- /* if (boton habilitado) {
+  if (g_slist_length (app_wdgts->windows) == 2){ //Sólo forma la ventaja emergente si sólo está presente la ventana original
+     GtkBuilder      *builder;
 
-  }
-  if (g_slist_length (app->windows) == 2){ //Sólo forma la ventaja emergente si sólo está presente la ventana original
+     builder = gtk_builder_new();
 
-     app->windows = g_slist_prepend (app->windows, window_resolve);  //Agregar ventana a la lista
-   
-     cancel_button = GTK_WIDGET(gtk_builder_get_object(builder, "cancelar_resolver"));
-     g_signal_connect (G_OBJECT (cancel_button), "clicked", G_CALLBACK (close_emergent_window), app);
+     if (file_valid) { // File is valid
+     GtkWidget       *window_resolve;
+     GtkWidget       *accept_button;
+     GtkWidget       *cancel_button;
+
+     gtk_builder_add_from_file (builder, "glade/window_resolve.glade", NULL);
+
+     window_resolve = GTK_WIDGET(gtk_builder_get_object(builder, "window_resolve"));
+
+     app_wdgts->windows = g_slist_prepend (app_wdgts->windows, window_resolve);  //Agregar ventana a la lista
+
+     g_signal_connect (G_OBJECT (window_resolve), "destroy", G_CALLBACK (on_window_destroy), app_wdgts);  //Conectar señales
+
+     accept_button = GTK_WIDGET(gtk_builder_get_object(builder, "accept_resolve"));
+     g_signal_connect (G_OBJECT (accept_button), "clicked", G_CALLBACK (close_emergent_window), app_wdgts);   
+     cancel_button = GTK_WIDGET(gtk_builder_get_object(builder, "cancel_resolve"));
+     g_signal_connect (G_OBJECT (cancel_button), "clicked", G_CALLBACK (close_emergent_window), app_wdgts);
 	                               
      gtk_widget_show_all (window_resolve);
-  }*/    
+
+     } else { // File is invalid
+     GtkWidget       *window_error;
+     GtkWidget       *accept_button;
+
+     gtk_builder_add_from_file (builder, "glade/window_error.glade", NULL);
+
+     window_error = GTK_WIDGET(gtk_builder_get_object(builder, "window_error"));
+
+     app_wdgts->windows = g_slist_prepend (app_wdgts->windows, window_error);  //Agregar ventana a la lista
+
+     g_signal_connect (G_OBJECT (window_error), "destroy", G_CALLBACK (on_window_destroy), app_wdgts);  //Conectar señales
+   
+     accept_button = GTK_WIDGET(gtk_builder_get_object(builder, "accept_error"));
+     g_signal_connect (G_OBJECT (accept_button), "clicked", G_CALLBACK (close_emergent_window), app_wdgts);
+	                               
+     gtk_widget_show_all (window_error);
+     }    
+  }
 }
 /*###########################################################################################################################################
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -158,6 +195,7 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
 //Obtained from:
 //https://developer.gnome.org/gtk3/stable/GtkFileChooserDialog.html
 {
+  a_file_was_opened = 0;
   GtkWidget *dialog;
   GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
   gint res;
@@ -179,9 +217,14 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
     filename = gtk_file_chooser_get_filename (chooser);
    // getfiledata(filename, app_wdgts); //AQUÍ SE OBTIENE LOS DATOS DEL ARCHIVO PERO NO ESTÁ HECHO AÚN
     g_free (filename);
+    a_file_was_opened = 1;
   }
 
   gtk_widget_destroy (dialog);
+
+  if (a_file_was_opened) { //Open next window
+     open_resolve_window_or_error_window (app_wdgts);
+  }
 
   return 0;
 }
@@ -275,7 +318,7 @@ int main(int argc, char *argv[])
     window_main = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
     // Get pointers to widgets here
     widgets->main_label = GTK_WIDGET(gtk_builder_get_object(builder, "main_label"));
-    widgets->filechooser_label = GTK_WIDGET(gtk_builder_get_object(builder, "filechooser_label"));
+    widgets->error_label = GTK_WIDGET(gtk_builder_get_object(builder, "error_label"));
     
      // Widgets pointer are passed to all widget handler functions as the user_data parameter
     gtk_builder_connect_signals(builder, widgets);
