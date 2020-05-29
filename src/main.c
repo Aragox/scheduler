@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 
 //To check if a file is valid
-int file_valid = 1; // Currently set to TRUE... for texting
+int file_valid = 1; // Currently set to TRUE... for testing
 
 //To check if a file was opened from the dialog
 int a_file_was_opened = 0;
@@ -55,7 +55,7 @@ void on_window_destroy (GtkWidget *widget, app_widgets *app_wdgts)
 {
         app_wdgts->windows = g_slist_remove (app_wdgts->windows, widget); //Remove the window from the list
 
-        gtk_widget_set_sensitive ((GtkWidget*)GTK_WINDOW(window_main), TRUE); // Enable main window
+        gtk_widget_show_all ((GtkWidget*)GTK_WINDOW(window_main)); // Show main window
         
         if (g_slist_length (app_wdgts->windows) == 0)
         {
@@ -72,7 +72,7 @@ void close_emergent_window(GtkWidget *widget, app_widgets *app_wdgts)
 {
   gtk_window_close ((GtkWindow*)g_slist_nth(app_wdgts->windows, 0)->data); //Closes the window
   app_wdgts->windows = g_slist_remove (app_wdgts->windows, widget); //Remove the window from the list
-  gtk_widget_set_sensitive ((GtkWidget*)GTK_WINDOW(window_main), TRUE); // Enable main window
+  gtk_widget_show_all ((GtkWidget*)GTK_WINDOW(window_main)); // Show main window
 }
 
 /*###########################################################################################################################################
@@ -277,7 +277,7 @@ void on_mfqs_clicked(GtkButton *button, app_widgets *app_wdgts)
 void open_resolve_window (app_widgets *app_wdgts)
 //Function that makes the pop-up window where the algorithm runs, appear
 {
-  if (g_slist_length (app_wdgts->windows) == 2){ //Sólo forma la ventaja emergente si sólo está presente la ventana original
+  if (g_slist_length (app_wdgts->windows) == 1){ //Sólo forma la ventaja emergente si sólo está presente la ventana original
      GtkBuilder      *builder;
 
      builder = gtk_builder_new();
@@ -298,7 +298,7 @@ void open_resolve_window (app_widgets *app_wdgts)
 	                               
      gtk_widget_show_all (window_resolve);
 
-     gtk_widget_set_sensitive ((GtkWidget*)GTK_WINDOW(window_main), FALSE); // Disable main window
+     gtk_widget_hide ((GtkWidget*)GTK_WINDOW(window_main)); // Disable main window
   }
 }
 
@@ -310,13 +310,17 @@ int main(int argc, char *argv[])
 {
     GtkBuilder      *builder; 
     // Instantiate structure, allocating memory for it
-    app_widgets     *widgets = g_slice_new(app_widgets);
+    app_widgets *widgets = g_slice_new(app_widgets);
+    widgets->windows = NULL;
     
     gtk_init(&argc, &argv);
 
     builder = gtk_builder_new_from_file("glade/scheduler.glade");
 
     window_main = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
+
+    widgets->windows = g_slist_prepend (widgets->windows, window_main);  //Agregar ventana a la lista 
+
     // Get pointers to widgets here
     widgets->main_label = GTK_WIDGET(gtk_builder_get_object(builder, "main_label"));
     widgets->error_label = GTK_WIDGET(gtk_builder_get_object(builder, "error_label"));
