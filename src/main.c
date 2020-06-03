@@ -1,3 +1,5 @@
+//#include <stdio.h>
+#include "queue.h"
 #include <gtk/gtk.h>
 
 //To check if a file is valid
@@ -6,8 +8,19 @@ int file_valid = 1; // Currently set to TRUE... for testing
 //To check if a file was opened from the dialog
 int a_file_was_opened = 0;
 
-//Stores the id of the selected algorithm
-int algorithm = 0;
+//Variables of the algorithm
+int algorithm = 0; //Stores the id of the selected algorithm
+int subalgoritmn = 0; //Additional algorithm for mqs and mqsf algoritmhs only
+int expropriation = 0; 
+int number_of_processes = 0;
+int quantum = 0;
+int work_to_be_done = 0;
+
+//Variables of the process
+int priority = 0;
+int arrive_time = 0;
+int work_units = 0;
+int number_of_terms = 0;
 
 GtkWidget *window_main; //Main window
 
@@ -83,7 +96,7 @@ void close_emergent_window(GtkWidget *widget, app_widgets *app_wdgts)
 int getfiledata(char *filename,  app_widgets *app_wdgts)
 //Function that gets the data from the file
 {
-/*FILE *file;
+  FILE *file;
 
   file = fopen(filename, "r");
 
@@ -91,54 +104,98 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
 
   if (file){
 
-     fscanf(file, "%d", &i); //Obtener Booleano
-     if (i == 1){
-        casilla_hexagonal = TRUE; //Casilla hexagonal
+     fscanf(file, "%d", &i); //Get Algorithm
+     printf("%d ", i);
+     if (i != algorithm){ // The algorithm obtained from the file is different from the one selected in the main menu
+       file_valid = 0; // Invalid file for the selected algorithm
+       return 0;
      }
-     else{
-         casilla_hexagonal = FALSE; //Casilla cuadrada
-     } 
 
-     fscanf(file, "%d", &i); //Obtener entrada laberinto
-     entrada = i;
-     fscanf(file, "%d", &i); //Obtener salida laberinto
-     salida = i;
- 
-     fscanf(file, "%d", &i); //Obtener #filas
-     files_gen = i;       
-     fscanf(file, "%d", &i); //Obtener #columnas
-     colums_gen = i;
+     fscanf(file, "%d", &i); //Get Expropriation
+     printf("%d ", i);
+     expropriation = i;
+     if (expropriation == 0){ // There is no expropriation
 
-     inicialize_maze_dimentions(); //Inicializar listas y matriz
+       fscanf(file, "%d", &i); //Get amount of work to be done before voluntarily giving up the procesor (in work units)
+       printf("%d ", i);
+       work_to_be_done = i;
+        
+       switch (algorithm)
+       {
+        case 1: // There is expropiation in FCFS Algorithm
+            break;
+        case 2: 
+            break; 
+        case 3: 
+            break;
+        case 4: 
+            break;
+        case 5: 
+            break;
+        case 6: 
+            break;
+        case 7: 
+            break;
+       }
+     } else { // There is expropriation
+
+       fscanf(file, "%d", &i); //Get quantum
+       quantum = i;
+
+       switch (algorithm)
+       {
+        case 1: // There should be no expropriation in the FCFS Algorithm
+            file_valid = 0; // Invalid file for the selected algorithm
+            return 0;
+            break;
+        case 2: 
+            break; 
+        case 3: 
+            break;
+        case 4: 
+            break;
+        case 5: 
+            break;
+        case 6: 
+            break;
+        case 7: 
+            break;
+       }
+     }
+
+     fscanf(file, "%d", &i); //Get number of processes
+     printf("%d ", i);
+     number_of_processes = i;
+
+     if (number_of_processes < 5 || number_of_processes > 25) { // Number of processes not in range 5-25
+       file_valid = 0; // Invalid file 
+       return 0;
+     }
      
-     int f = 0;
-     int k = 0; 
-     fscanf(file, "%d", &i);
-     while (!feof (file)){
-           printf("%d ", i); 
-           M[f][k] = i;
-           fscanf(file, "%d", &i);
-           k++;
-           if (k > colums_gen - 1){
-              k = 0;
-              f++;
-           }
-           
+     int cont = 0; 
+     //fscanf(file, "%d", &i);
+     //while (!feof (file)){
+     while (cont < number_of_processes && (!feof (file))){
+        fscanf(file, "%d", &i);
+        printf("%d ", i); 
+     // OBTENER LOS TIEMPOS DE LLEGADA DE LOS PROCESOS
+        cont = cont + 1;          
+     }
+
+     cont = 0; 
+     //fscanf(file, "%d", &i);
+     //while (!feof (file)){
+     while (cont < number_of_processes && (!feof (file))){ 
+        fscanf(file, "%d", &i);
+        printf("%d ", i);
+     // OBTENER LA CANTIDAD DE TRABAJO DE LOS PROCESOS
+        cont = cont + 1;          
      }
       
     fclose (file);
-    update_message(app_wdgts, "Archivo cargado"); //Actualizar mensaje de notificacion
-    update();
-    erase_maze(); //Borrar Laberinto (el que se está desplegando en la ventana)
-    suma_x = (gtk_widget_get_allocated_width (drawing_area)/2); //Resetear movimiento en los ejes
-    suma_y = (gtk_widget_get_allocated_height (drawing_area)/2);
-    draw_maze();//Dibujar laberinto
-   
-    free(R);  //Liberar memoria de R y C
-    free(C);
-    maze_showed = TRUE;
-    maze_generated = FALSE;
-  }*/
+//    update_message(app_wdgts, "Archivo cargado"); //Actualizar mensaje de notificacion
+//    update(); FUNCIÓN QUE NO ESTÁ HECHA
+  }
   return 0;
 }
 
@@ -167,7 +224,7 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
     char *filename;
     GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
     filename = gtk_file_chooser_get_filename (chooser);
-   // getfiledata(filename, app_wdgts); //AQUÍ SE OBTIENE LOS DATOS DEL ARCHIVO PERO NO ESTÁ HECHO ACORDE AÚN
+    getfiledata(filename, app_wdgts); //AQUÍ SE OBTIENE LOS DATOS DEL ARCHIVO
     g_free (filename);
     a_file_was_opened = 1;
   }
