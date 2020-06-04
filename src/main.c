@@ -3,7 +3,7 @@
 #include <gtk/gtk.h>
 
 //To check if a file is valid
-int file_valid = 1; // Currently set to TRUE... for testing
+int file_valid = 1; 
 
 //To check if a file was opened from the dialog
 int a_file_was_opened = 0;
@@ -21,6 +21,9 @@ int priority = 0;
 int arrive_time = 0;
 int work_units = 0;
 int number_of_terms = 0;
+int pi = 0;
+
+gpointer error_message = ""; // Stores the error message to display in the error dialogue
 
 GtkWidget *window_main; //Main window
 
@@ -29,7 +32,6 @@ typedef struct {
     // Add pointers to widgets below
     GSList *windows;      //List of windows
     GtkWidget *main_label; //Label in the main window 
-    GtkWidget *error_label; //Label in the error window
 } app_widgets;
 
 int open_message_dialog ();
@@ -38,13 +40,13 @@ void open_resolve_window (app_widgets *app_wdgts);
 /*###########################################################################################################################################
 ---------------------------------------------------------------------------------------------------------------------------------------------
 #############################################################################################################################################*/
-/*FUNCTION THAT DISPLAYS WARNING MESSAGE IN THE ERROR WINDOW'S LABEL*/
+/*FUNCTION THAT DISPLAYS WARNING MESSAGE IN THE ERROR WINDOW'S LABEL*/ 
 
-void update_message(app_widgets *app_wdgts, gpointer data)
+/*void update_message(app_widgets *app_wdgts, gpointer data) NOT USED
 //Display warning message on the label with id tag filevalid_label, in file chooser dialog
 {
  gtk_label_set_text(GTK_LABEL(app_wdgts->error_label), data);
-}
+}*/
 /*###########################################################################################################################################
 ---------------------------------------------------------------------------------------------------------------------------------------------
 #############################################################################################################################################*/
@@ -102,41 +104,26 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
 
   int i;
 
+  int* arrivaltimes_array;
+  int* workunits_array;
+  int* priorities_array; 
+
   if (file){
 
      fscanf(file, "%d", &i); //Get Algorithm
-     printf("%d ", i);
-     if (i != algorithm){ // The algorithm obtained from the file is different from the one selected in the main menu
+     if (i != algorithm){ // The algorithm value obtained from the file is different from the one selected in the main menu
        file_valid = 0; // Invalid file for the selected algorithm
+       error_message = "The algorithm value obtained from the file is different from the one selected in the main menu";
        return 0;
-     }
+     } 
 
      fscanf(file, "%d", &i); //Get Expropriation
-     printf("%d ", i);
      expropriation = i;
      if (expropriation == 0){ // There is no expropriation
 
        fscanf(file, "%d", &i); //Get amount of work to be done before voluntarily giving up the procesor (in work units)
-       printf("%d ", i);
        work_to_be_done = i;
-        
-       switch (algorithm)
-       {
-        case 1: // There is expropiation in FCFS Algorithm
-            break;
-        case 2: 
-            break; 
-        case 3: 
-            break;
-        case 4: 
-            break;
-        case 5: 
-            break;
-        case 6: 
-            break;
-        case 7: 
-            break;
-       }
+      
      } else { // There is expropriation
 
        fscanf(file, "%d", &i); //Get quantum
@@ -146,6 +133,7 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
        {
         case 1: // There should be no expropriation in the FCFS Algorithm
             file_valid = 0; // Invalid file for the selected algorithm
+            error_message = "There should be no expropriation in the FCFS Algorithm";
             return 0;
             break;
         case 2: 
@@ -164,37 +152,113 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
      }
 
      fscanf(file, "%d", &i); //Get number of processes
-     printf("%d ", i);
      number_of_processes = i;
-
      if (number_of_processes < 5 || number_of_processes > 25) { // Number of processes not in range 5-25
        file_valid = 0; // Invalid file 
+       error_message = "Number of processes not in range 5-25";
        return 0;
      }
      
+     arrivaltimes_array = calloc(number_of_processes, sizeof(int) );  // Make dynamic array 
+     workunits_array = calloc(number_of_processes, sizeof(int) );  // Make dynamic array 
+     priorities_array = calloc(number_of_processes, sizeof(int) );  // Make dynamic array 
+     
      int cont = 0; 
-     //fscanf(file, "%d", &i);
-     //while (!feof (file)){
-     while (cont < number_of_processes && (!feof (file))){
+     while (cont < number_of_processes && (!feof (file))){ //OBTAIN THE ARRIVAL TIMES OF THE PROCESSES
         fscanf(file, "%d", &i);
-        printf("%d ", i); 
-     // OBTENER LOS TIEMPOS DE LLEGADA DE LOS PROCESOS
+        *(arrivaltimes_array + cont) = i;            // put value i in array element cont
         cont = cont + 1;          
+     }
+     if (cont < number_of_processes) { // File is incomplete
+       file_valid = 0; // Invalid file 
+       error_message = "Incomplete File in “ARRIVAL TIMES OF THE PROCESSES” (Not valid)";
+       return 0;
      }
 
      cont = 0; 
-     //fscanf(file, "%d", &i);
-     //while (!feof (file)){
-     while (cont < number_of_processes && (!feof (file))){ 
+     while (cont < number_of_processes && (!feof (file))){ // GET THE WORK UNITS OF THE PROCESSES
         fscanf(file, "%d", &i);
-        printf("%d ", i);
-     // OBTENER LA CANTIDAD DE TRABAJO DE LOS PROCESOS
+        *(workunits_array + cont) = i;            // put value i in array element index
         cont = cont + 1;          
+     }
+     if (cont < number_of_processes) { // File is incomplete
+       file_valid = 0; // Invalid file 
+       error_message = "Incomplete File in “WORK UNITS OF THE PROCESSES” (Not valid)";
+       return 0;
+     }
+
+     switch (algorithm)
+     {
+	case 1: // FCFS Algorithm
+	    break;
+	case 2: // SJF Algorithm
+	    break; 
+	case 3: // RR Algorithm
+	    break;
+	case 4: // PS Algorithm
+	    cont = 0; 
+	    while (cont < number_of_processes && (!feof (file))){ // OBTAIN THE PRIORITIES OF THE PROCESSES
+	       fscanf(file, "%d", &i);
+               *(priorities_array + cont) = i;            // put value i in array element index
+	       cont = cont + 1;          
+	    }
+            if (cont < number_of_processes) { // File is incomplete
+              file_valid = 0; // Invalid file 
+              error_message = "Incomplete File in “PRIORITIES OF THE PROCESSES” (Not valid)";
+              return 0;
+            }
+	    break;
+	case 5: // PSRR Algorithm
+	    cont = 0; 
+	    while (cont < number_of_processes && (!feof (file))){ // OBTAIN THE PRIORITIES OF THE PROCESSES
+	       fscanf(file, "%d", &i);
+               *(priorities_array + cont) = i;            // put value i in array element index
+	       cont = cont + 1;          
+	    }
+            if (cont < number_of_processes) { // File is incomplete
+              file_valid = 0; // Invalid file 
+              error_message = "Incomplete File in “PRIORITIES OF THE PROCESSES” (Not valid)";
+              return 0;
+            }
+	    break;
+	case 6: // MQS Algorithm
+	    fscanf(file, "%d", &i); //Get Sub-Algorithm
+	    subalgoritmn = i;
+            if (subalgoritmn > 5 || subalgoritmn < 1) { // Sub-algorithm not in range 1-5
+              file_valid = 0; // Invalid file 
+              error_message = "Sub-algorithm not in range 1-5";
+              return 0;
+            }
+	    break;
+	case 7: // MFQS Algorithm
+	    fscanf(file, "%d", &i); //Get Sub-Algorithm
+	    subalgoritmn = i;
+            if (subalgoritmn > 5 || subalgoritmn < 1) { // Sub-algorithm not in range 1-5
+              file_valid = 0; // Invalid file 
+              error_message = "Sub-algorithm not in range 1-5";
+              return 0;
+            }
+	    break;
      }
       
     fclose (file);
 //    update_message(app_wdgts, "Archivo cargado"); //Actualizar mensaje de notificacion
 //    update(); FUNCIÓN QUE NO ESTÁ HECHA
+printf("\n");
+    for (int index = 0; index < number_of_processes; index++ ) {
+   	printf("%d", *(arrivaltimes_array+index) );
+    }
+printf("\n");
+    for (int index = 0; index < number_of_processes; index++ ) {
+   	printf("%d", *(workunits_array+index) );
+    }
+printf("\n");
+    for (int index = 0; index < number_of_processes; index++ ) {
+   	printf("%d", *(priorities_array+index) );
+    }
+    free(arrivaltimes_array); // Un-reserve the array
+    free(workunits_array); // Un-reserve the array
+    free(priorities_array); // Un-reserve the array
   }
   return 0;
 }
@@ -224,7 +288,7 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
     char *filename;
     GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
     filename = gtk_file_chooser_get_filename (chooser);
-    getfiledata(filename, app_wdgts); //AQUÍ SE OBTIENE LOS DATOS DEL ARCHIVO
+    getfiledata(filename, app_wdgts); // HERE YOU GET THE DATA OF THE FILE
     g_free (filename);
     a_file_was_opened = 1;
   }
@@ -233,16 +297,16 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
 
   if (a_file_was_opened) { //Open next window
      if (!file_valid) { //Open file is not valid 
-        open_message_dialog ();
+        open_message_dialog (error_message);
      } else { //Open file is valid
         open_resolve_window (app_wdgts);
      }
   }
-
+  file_valid = 1; // Reset the validity value to its standard value
   return 0;
 }
 
-int open_message_dialog ()
+int open_message_dialog (gpointer data)
 {
   GtkWidget *dialog;
   GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
@@ -250,7 +314,7 @@ int open_message_dialog ()
                                  flags,
                                  GTK_MESSAGE_ERROR,
                                  GTK_BUTTONS_CLOSE,
-                                 "Open file is not valid for algorithm X");
+                                 "%s", (char *)data);
   gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog); 
   return 0;
@@ -380,7 +444,6 @@ int main(int argc, char *argv[])
 
     // Get pointers to widgets here
     widgets->main_label = GTK_WIDGET(gtk_builder_get_object(builder, "main_label"));
-    widgets->error_label = GTK_WIDGET(gtk_builder_get_object(builder, "error_label"));
     
      // Widgets pointer are passed to all widget handler functions as the user_data parameter
     gtk_builder_connect_signals(builder, widgets);
