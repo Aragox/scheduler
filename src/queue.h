@@ -9,31 +9,60 @@ Implementación del Queue obtenida de: https://www.geeksforgeeks.org/priority-qu
   
 // Node 
 typedef struct node { 
-    int data; 
-  
-    // Lower values indicate higher priority 
-    int priority; 
+    //Variables of the node process
+    int arrive_time;
+    int work_units;
+    int number_of_terms;
+    int sum_pi; 
+    int priority; // Lower values indicate higher priority 
   
     struct node* next; 
   
 } Node; 
   
 // Function to Create A New Node 
-Node* newNode(int d, int p) 
+Node* newNode(int arrive_time, int work_units, int number_of_terms, int sum_pi, int priority) 
 { 
     Node* temp = (Node*)malloc(sizeof(Node)); 
-    temp->data = d; 
-    temp->priority = p; 
+    temp->arrive_time = arrive_time; 
+    temp->work_units = work_units; 
+    temp->number_of_terms = number_of_terms; 
+    temp->sum_pi = sum_pi; 
+    temp->priority = priority; 
     temp->next = NULL; 
   
     return temp; 
 } 
   
-// Return the value at head 
-int peek(Node** head) 
+// Return the arrive_time at head 
+int peek_arrivetime(Node** head) 
 { 
-    return (*head)->data; 
+    return (*head)->arrive_time; 
+}
+
+// Return the work_units at head 
+int peek_workunits(Node** head) 
+{ 
+    return (*head)->work_units; 
 } 
+
+// Return the number_of_terms at head 
+int peek_numberofterms(Node** head) 
+{ 
+    return (*head)->number_of_terms; 
+}  
+
+// Return the sum_pi at head 
+int peek_sumpi(Node** head) 
+{ 
+    return (*head)->sum_pi; 
+} 
+
+// Return the priority at head 
+int peek_priority(Node** head) 
+{ 
+    return (*head)->priority; 
+}      
   
 // Removes the element with the 
 // highest priority form the list 
@@ -45,12 +74,12 @@ void pop(Node** head)
 } 
   
 // Function to push according to priority 
-void push(Node** head, int d, int p) 
+void push(Node** head, int arrive_time, int work_units, int number_of_terms, int sum_pi, int p) 
 { 
     Node* start = (*head); 
   
     // Create new Node 
-    Node* temp = newNode(d, p); 
+    Node* temp = newNode(arrive_time, work_units, number_of_terms, sum_pi, p); 
   
     // Special Case: The head of list has lesser 
     // priority than new node. So insert new 
@@ -59,14 +88,13 @@ void push(Node** head, int d, int p)
   
         // Insert New Node before head 
         temp->next = *head; 
-        (*head) = temp; 
-    } 
-    else { 
-  
+        (*head) = temp;
+
+    } else {
         // Traverse the list and find a 
         // position to insert new node 
         while (start->next != NULL && 
-               start->next->priority < p) { 
+               start->next->priority <= p) { 
             start = start->next; 
         } 
   

@@ -23,6 +23,8 @@ int work_units = 0;
 int number_of_terms = 0;
 int pi = 0;
 
+Node* pq; // Priority queue
+
 gpointer error_message = ""; // Stores the error message to display in the error dialogue
 
 GtkWidget *window_main; //Main window
@@ -256,6 +258,19 @@ printf("\n");
     for (int index = 0; index < number_of_processes; index++ ) {
    	printf("%d", *(priorities_array+index) );
     }
+    pq = newNode(*(arrivaltimes_array+0), *(workunits_array+0), (*(workunits_array+0))*50, 0, 0); //arrive_time, work_units, number_of_terms, sum_pi, priority
+    for (int index = 1; index < number_of_processes; index++ ) {
+        push(&pq, *(arrivaltimes_array+index), *(workunits_array+index), (*(workunits_array+index))*50, 0, 0); //head node, arrive_time, work_units, number_of_terms, sum_pi, priority
+    }    
+/*push(&pq, *(arrivaltimes_array+1), *(workunits_array+1), (*(workunits_array+1))*50, 0, 0); //head node, arrive_time, work_units, number_of_terms, sum_pi, priority
+push(&pq, *(arrivaltimes_array+2), *(workunits_array+2), (*(workunits_array+2))*50, 0, 0); //head node, arrive_time, work_units, number_of_terms, sum_pi, priority
+push(&pq, *(arrivaltimes_array+3), *(workunits_array+3), (*(workunits_array+3))*50, 0, 0); //head node, arrive_time, work_units, number_of_terms, sum_pi, priority
+push(&pq, *(arrivaltimes_array+4), *(workunits_array+4), (*(workunits_array+4))*50, 0, 0); //head node, arrive_time, work_units, number_of_terms, sum_pi, priority*/
+printf("\n");  
+    while (!isEmpty(&pq)) { 
+        printf("%d ", peek_arrivetime(&pq)); 
+        pop(&pq); 
+    } 
     free(arrivaltimes_array); // Un-reserve the array
     free(workunits_array); // Un-reserve the array
     free(priorities_array); // Un-reserve the array
