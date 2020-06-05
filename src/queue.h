@@ -17,13 +17,14 @@ typedef struct node {
     long double sum_pi;
     long long int fact; 
     int priority; // Lower values indicate higher priority 
+    int optional; // An extra argument 
   
     struct node* next; 
   
 } Node; 
   
 // Function to Create A New Node 
-Node* newNode(int id, int arrive_time, int work_units, int number_of_terms, long double sum_pi, long long int fact, int priority) 
+Node* newNode(int id, int arrive_time, int work_units, int number_of_terms, long double sum_pi, long long int fact, int priority, int optional) 
 { 
     Node* temp = (Node*)malloc(sizeof(Node)); 
     temp->id = id; 
@@ -32,7 +33,8 @@ Node* newNode(int id, int arrive_time, int work_units, int number_of_terms, long
     temp->number_of_terms = number_of_terms; 
     temp->sum_pi = sum_pi; 
     temp->fact = fact;
-    temp->priority = priority; 
+    temp->priority = priority;
+    temp->optional = optional; 
     temp->next = NULL; 
   
     return temp; 
@@ -79,7 +81,13 @@ long long int peek_fact(Node** head)
 int peek_priority(Node** head) 
 { 
     return (*head)->priority; 
-}      
+} 
+
+// Return the optional argument at head 
+int peek_optional(Node** head) 
+{ 
+    return (*head)->optional; 
+}        
  
 
 //SET OPERATIONS
@@ -105,7 +113,13 @@ void set_fact(Node** head, long long int fact)
 void set_priority(Node** head, int priority) 
 { 
     (*head)->priority = priority; 
-}      
+} 
+
+// Set the optional argument at head 
+void set_optional(Node** head, int optional) 
+{ 
+    (*head)->optional = optional; 
+}        
 
 //POP
 // Removes the element with the 
@@ -119,12 +133,12 @@ void pop(Node** head)
  
 //PUSH 
 // Function to push according to priority 
-void push(Node** head, int id, int arrive_time, int work_units, int number_of_terms, long double sum_pi, long long int fact, int p) 
+void push(Node** head, int id, int arrive_time, int work_units, int number_of_terms, long double sum_pi, long long int fact, int p, int optional) 
 { 
     Node* start = (*head); 
   
     // Create new Node 
-    Node* temp = newNode(id, arrive_time, work_units, number_of_terms, sum_pi, fact, p); 
+    Node* temp = newNode(id, arrive_time, work_units, number_of_terms, sum_pi, fact, p, optional); 
   
     // Special Case: The head of list has lesser 
     // priority than new node. So insert new 
