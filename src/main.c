@@ -57,23 +57,10 @@ void execute_sjf();
 //void execute_mfqs();  SIN IMPLEMENTAR 
 
 
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/*###########################################################################################################################################
+---------------------------------------------------------------------------------------------------------------------------------------------
+#############################################################################################################################################*/
 /*FUNCTION THAT SHOWS DATA IN WINDOW_RESOLVE*/
-/*void update_windowresolve_labels(app_widgets *app_wdgts, gpointer workunits, gpointer arrivaltime, gpointer processid, gpointer sumpi)
-//Shows data in the window_resolve
-{
- gtk_label_set_text(GTK_LABEL(app_wdgts->workunits_label), workunits);
- gtk_label_set_text(GTK_LABEL(app_wdgts->arrivaltime_label), arrivaltime);
- gtk_label_set_text(GTK_LABEL(app_wdgts->processid_label), processid);
- gtk_label_set_text(GTK_LABEL(app_wdgts->sumpi_label), sumpi);
-}*/
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-/*FUNCTIONS FOR UPDATES*/
-void update(int time){
-//Function that makes pending updates of the entire application
-     while (g_main_context_iteration(NULL, FALSE));
-     usleep(time);
-}
 void update_window_resolve(app_widgets *app_wdgts, int time){
 // Function that shows data in the window_resolve
    char buffer[50];  //Shows data in the window_resolve
@@ -90,6 +77,15 @@ void update_window_resolve(app_widgets *app_wdgts, int time){
    sprintf(buffer, "%d", peek_workunits(&ready_queue)); 
    gtk_label_set_text((GtkLabel*)app_wdgts->workunits_label2, buffer);
    update(time);
+}
+/*###########################################################################################################################################
+---------------------------------------------------------------------------------------------------------------------------------------------
+#############################################################################################################################################*/
+/*FUNCTION FOR UPDATE*/
+void update(int time){
+//Function that makes pending updates of the entire application
+     while (g_main_context_iteration(NULL, FALSE));
+     usleep(time);
 }
 /*###########################################################################################################################################
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -158,20 +154,23 @@ void execute_sjf(app_widgets *app_wdgts)
   pop(&arrivetime_queue); //remove head in arrivetime_queue 
 
 //PSEUDOCÓDIGO DEL ALGORITMO
-/*Do
+/*
 Empezar a contar tiempo
+Do {
 Ejecutar terminos de serie
-Si se terminó el trabajo del proceso (se hicieron todos sus terminos)
+Actualizar datos de window_resolve
+Aumentar contador de tiempo
+Si se terminó todo el trabajo del proceso 
    pop(&ready_queue)
 Si arrivetime_queue no está vacío
    Obtener tiempo de llegada  peek_arrivetime(&arrivetime_queue)
    Si tiempo de llegada <= tiempo contado
-      Meter head arrivetime_queue en ready_queue
+      Meter head de arrivetime_queue en ready_queue
       pop(&arrivetime_queue); //remove head in arrivetime_queue 
-While ready_queue no está vacío || arrivetime_queue no está vacío*/
+} While ready_queue no está vacío || arrivetime_queue no está vacío*/
   int sec = 0; // Time count  
 
-   update_window_resolve(app_wdgts, 1000000);
+   update_window_resolve(app_wdgts, 1000000); // Show data before do while
 
   do {
    printf("\n");
@@ -200,40 +199,6 @@ While ready_queue no está vacío || arrivetime_queue no está vacío*/
    }
 
   } while (!isEmpty(&ready_queue) || !isEmpty(&arrivetime_queue));
-/*
-  int msec = 0; // Time count 
-  clock_t before = clock(); // Begin timer
-   printf("\n");
-   printf("OVENEGONES"); 
-
-   update_window_resolve(app_wdgts, 1000000);
-
-  do {
-   taylor_series(peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue)); 
-
-   update_window_resolve(app_wdgts, 500000);
-
-   clock_t difference = clock() - before;
-   msec = difference * 1000 / CLOCKS_PER_SEC; // Get miliseconds
-
-   if (peek_numberofterms(&ready_queue) >= peek_workunits(&ready_queue)) { // If process finished all work
-      printf("\n");
-      printf("Process complete: %d", peek_id(&ready_queue));     
-      pop(&ready_queue); //remove head in ready_queue
-   }
-   if (!isEmpty(&arrivetime_queue)) { // arrivetime_queue is not empty
-      printf("\n");
-      printf("msec: %d", msec); 
-      printf("\n");
-      printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue)); 
-      if (peek_arrivetime(&arrivetime_queue) <= msec) {
-         push(&ready_queue, peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_priority(&arrivetime_queue)); //get head node from arrivetime_queue
-         pop(&arrivetime_queue); //remove head in arrivetime_queue 
-      } 
-   }
-
-  } while (!isEmpty(&ready_queue) || !isEmpty(&arrivetime_queue));
-*/
 }
 
 /*###########################################################################################################################################
