@@ -1,6 +1,8 @@
 //#include <stdio.h>
 #include "queue.h"
 #include <gtk/gtk.h>
+#include <time.h>
+//#include <math.h>
 
 //To check if a file is valid
 int file_valid = 1; 
@@ -10,20 +12,20 @@ int a_file_was_opened = 0;
 
 //Variables of the algorithm
 int algorithm = 0; //Stores the id of the selected algorithm
-int subalgoritmn = 0; //Additional algorithm for mqs and mqsf algoritmhs only
+int subalgorithm = 0; //Additional algorithm for mqs and mqsf algoritmhs only
 int expropriation = 0; 
 int number_of_processes = 0;
 int quantum = 0;
 int work_to_be_done = 0;
 
-//Variables of the process
-int priority = 0;
-int arrive_time = 0;
-int work_units = 0;
-int number_of_terms = 0;
-int pi = 0;
+//Variables for all the processes 
+int* arrivaltimes_array;
+int* workunits_array;
+int* priorities_array; 
 
-Node* pq; // Priority queue
+//Queues for schedulig algorithms
+Node* arrivetime_queue; // queue of processes ordered by arrival times
+Node* ready_queue; // queue of ready processes for ejecution
 
 gpointer error_message = ""; // Stores the error message to display in the error dialogue
 
@@ -34,21 +36,155 @@ typedef struct {
     // Add pointers to widgets below
     GSList *windows;      //List of windows
     GtkWidget *main_label; //Label in the main window 
+    GtkWidget *workunits_label; //Label in the window_resolve
+    GtkWidget *arrivaltime_label; //Label in the window_resolve 
+    GtkWidget *processid_label; //Label in the window_resolve 
+    GtkWidget *sumpi_label; //Label in the window_resolve
+//termsprogress_bar
 } app_widgets;
 
 int open_message_dialog ();
-void open_resolve_window (app_widgets *app_wdgts);  
+void open_resolve_window (app_widgets *app_wdgts);
 
+// void execute_fcfs(); SIN IMPLEMENTAR
+void execute_sjf(); 
+//void execute_rr(); SIN IMPLEMENTAR
+//void execute_ps(); SIN IMPLEMENTAR
+//void execute_psrr(); SIN IMPLEMENTAR
+//void execute_mqs(); SIN IMPLEMENTAR
+//void execute_mfqs();  SIN IMPLEMENTAR 
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/*FUNCTION THAT SHOWS DATA IN WINDOW_RESOLVE*/
+/*void update_windowresolve_labels(app_widgets *app_wdgts, gpointer workunits, gpointer arrivaltime, gpointer processid, gpointer sumpi)
+//Shows data in the window_resolve
+{
+ gtk_label_set_text(GTK_LABEL(app_wdgts->workunits_label), workunits);
+ gtk_label_set_text(GTK_LABEL(app_wdgts->arrivaltime_label), arrivaltime);
+ gtk_label_set_text(GTK_LABEL(app_wdgts->processid_label), processid);
+ gtk_label_set_text(GTK_LABEL(app_wdgts->sumpi_label), sumpi);
+}*/
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/*FUNCTION FOR UPDATES*/
+void update(){
+//Function that makes pending updates of the entire application
+     while (g_main_context_iteration(NULL, FALSE));
+}
 /*###########################################################################################################################################
 ---------------------------------------------------------------------------------------------------------------------------------------------
 #############################################################################################################################################*/
-/*FUNCTION THAT DISPLAYS WARNING MESSAGE IN THE ERROR WINDOW'S LABEL*/ 
+/*FUNCTIONS THAT EXECUTE SCHEDULING ALGORITHMS */
 
-/*void update_message(app_widgets *app_wdgts, gpointer data) NOT USED
-//Display warning message on the label with id tag filevalid_label, in file chooser dialog
+int power(int x, unsigned int y) 
+/* Function to calculate x raised to the power y */
+//Obtained from:
+//https://www.geeksforgeeks.org/write-a-c-program-to-calculate-powxn/ 
+{ 
+    if (y == 0) 
+        return 1; 
+    else if (y%2 == 0) 
+        return power(x, y/2)*power(x, y/2); 
+    else
+        return x*power(x, y/2)*power(x, y/2); 
+} 
+
+
+void taylor_series(int expropiative, int workunits, int numberoftermsdone, long double sumpi, long long int fact)
+/* Function to execute taylor series for an expropiative or non expropiative algorithm */
+ {
+   int totalnumberofterms = workunits*50;
+   int terms_to_do_now = work_to_be_done;
+   int time_available = quantum;
+
+   if (expropiative) {
+
+     int msec = 0; // Time count 
+     clock_t before = clock(); // Begin timer
+
+     do {
+          fact = fact*numberoftermsdone;
+          sumpi = sumpi + (power(2,numberoftermsdone)/fact) ;
+
+          numberoftermsdone = numberoftermsdone + 1;
+
+          clock_t difference = clock() - before;
+          msec = difference * 1000 / CLOCKS_PER_SEC; // Get miliseconds
+
+     } while ((msec < time_available) && (numberoftermsdone < totalnumberofterms));
+
+   } else {
+
+     while ((terms_to_do_now > 0) && (numberoftermsdone < totalnumberofterms)) {
+          fact = fact*numberoftermsdone;
+          sumpi = sumpi + (power(2,numberoftermsdone)/fact) ;
+
+          numberoftermsdone = numberoftermsdone + 1;
+          terms_to_do_now = terms_to_do_now - 1;
+     }
+   }
+
+   if (numberoftermsdone >= totalnumberofterms) {
+      sumpi = sumpi + 1; //Since series starts with 1
+   }
+
+   set_sumpi(&ready_queue, sumpi); // Set sumpi 
+   set_numberofterms(&ready_queue, numberoftermsdone); // Set number of terms 
+   set_fact(&ready_queue, fact); // Set factorial  
+}
+
+void execute_sjf(app_widgets *app_wdgts)
 {
- gtk_label_set_text(GTK_LABEL(app_wdgts->error_label), data);
-}*/
+  ready_queue = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_priority(&arrivetime_queue)); //get head node from arrivetime_queue
+  pop(&arrivetime_queue); //remove head in arrivetime_queue 
+
+//PSEUDOCÓDIGO DEL ALGORITMO
+/*Do
+Empezar a contar tiempo
+Ejecutar terminos de serie
+Si se terminó el trabajo del proceso (se hicieron todos sus terminos)
+   pop(&ready_queue)
+Si arrivetime_queue no está vacío
+   Obtener tiempo de llegada  peek_arrivetime(&arrivetime_queue)
+   Si tiempo de llegada <= tiempo contado
+      Meter head arrivetime_queue en ready_queue
+      pop(&arrivetime_queue); //remove head in arrivetime_queue 
+While ready_queue no está vacío || arrivetime_queue no está vacío*/
+
+  int msec = 0; // Time count 
+  clock_t before = clock(); // Begin timer
+
+  do {
+   taylor_series(0, peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue)); 
+
+   char buffer[50];  //Shows data in the window_resolve
+   sprintf(buffer, "%d", peek_workunits(&ready_queue)); 
+   gtk_label_set_text((GtkLabel*)app_wdgts->workunits_label, buffer);
+   sprintf(buffer, "%d", peek_arrivetime(&ready_queue)); 
+   gtk_label_set_text((GtkLabel*)app_wdgts->arrivaltime_label, buffer);
+   sprintf(buffer, "%d", peek_id(&ready_queue)); 
+   gtk_label_set_text((GtkLabel*)app_wdgts->processid_label, buffer);
+   sprintf(buffer, "%Lf", peek_sumpi(&ready_queue)); 
+   gtk_label_set_text((GtkLabel*)app_wdgts->sumpi_label, buffer);
+   update();
+
+   clock_t difference = clock() - before;
+   msec = difference * 1000 / CLOCKS_PER_SEC; // Get miliseconds
+
+   if (peek_numberofterms(&ready_queue) >= peek_workunits(&ready_queue)*50) { // If process finished all work
+      pop(&ready_queue); //remove head in ready_queue
+   }
+   if (!isEmpty(&arrivetime_queue)) { // arrivetime_queue is not empty
+      if (peek_arrivetime(&arrivetime_queue)*1000 <= msec) {
+         push(&ready_queue, peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_priority(&arrivetime_queue)); //get head node from arrivetime_queue
+         pop(&arrivetime_queue); //remove head in arrivetime_queue 
+      }
+   }
+
+  } while (!isEmpty(&ready_queue) || !isEmpty(&arrivetime_queue));
+
+}
+
 /*###########################################################################################################################################
 ---------------------------------------------------------------------------------------------------------------------------------------------
 #############################################################################################################################################*/
@@ -81,7 +217,7 @@ void on_window_destroy (GtkWidget *widget, app_widgets *app_wdgts)
                 g_debug ("Exiting...");
                 g_slist_free (app_wdgts->windows);
                 gtk_main_quit ();
-        }
+        } 
 }
 
 void close_emergent_window(GtkWidget *widget, app_widgets *app_wdgts)
@@ -105,10 +241,6 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
   file = fopen(filename, "r");
 
   int i;
-
-  int* arrivaltimes_array;
-  int* workunits_array;
-  int* priorities_array; 
 
   if (file){
 
@@ -180,7 +312,7 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
      cont = 0; 
      while (cont < number_of_processes && (!feof (file))){ // GET THE WORK UNITS OF THE PROCESSES
         fscanf(file, "%d", &i);
-        *(workunits_array + cont) = i;            // put value i in array element index
+        *(workunits_array + cont) = i;            // put value i in array element cont
         cont = cont + 1;          
      }
      if (cont < number_of_processes) { // File is incomplete
@@ -189,11 +321,22 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
        return 0;
      }
 
+     cont = 0; 
+     while (cont < number_of_processes){ // Initialize PRIORITIES in 0's
+           *(priorities_array + cont) = 0;            // put value i in array element cont
+	   cont = cont + 1;          
+     }
+
      switch (algorithm)
      {
 	case 1: // FCFS Algorithm
 	    break;
 	case 2: // SJF Algorithm
+            cont = 0; 
+            while (cont < number_of_processes){ // make the priorities_array the same as workunits_array
+               *(priorities_array + cont) = *(workunits_array+cont);            // put value i in array element cont
+	       cont = cont + 1;          
+            }
 	    break; 
 	case 3: // RR Algorithm
 	    break;
@@ -201,7 +344,7 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
 	    cont = 0; 
 	    while (cont < number_of_processes && (!feof (file))){ // OBTAIN THE PRIORITIES OF THE PROCESSES
 	       fscanf(file, "%d", &i);
-               *(priorities_array + cont) = i;            // put value i in array element index
+               *(priorities_array + cont) = i;            // put value i in array element cont
 	       cont = cont + 1;          
 	    }
             if (cont < number_of_processes) { // File is incomplete
@@ -214,7 +357,7 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
 	    cont = 0; 
 	    while (cont < number_of_processes && (!feof (file))){ // OBTAIN THE PRIORITIES OF THE PROCESSES
 	       fscanf(file, "%d", &i);
-               *(priorities_array + cont) = i;            // put value i in array element index
+               *(priorities_array + cont) = i;            // put value i in array element cont
 	       cont = cont + 1;          
 	    }
             if (cont < number_of_processes) { // File is incomplete
@@ -223,19 +366,19 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
               return 0;
             }
 	    break;
-	case 6: // MQS Algorithm
+	case 6: // MQS Algorithm FALTA AGREGAR CÓDIGO AQUÍ***********
 	    fscanf(file, "%d", &i); //Get Sub-Algorithm
-	    subalgoritmn = i;
-            if (subalgoritmn > 5 || subalgoritmn < 1) { // Sub-algorithm not in range 1-5
+	    subalgorithm = i;
+            if (subalgorithm > 5 || subalgorithm < 1) { // Sub-algorithm not in range 1-5
               file_valid = 0; // Invalid file 
               error_message = "Sub-algorithm not in range 1-5";
               return 0;
             }
 	    break;
-	case 7: // MFQS Algorithm
+	case 7: // MFQS Algorithm FALTA AGREGAR CÓDIGO AQUÍ**********
 	    fscanf(file, "%d", &i); //Get Sub-Algorithm
-	    subalgoritmn = i;
-            if (subalgoritmn > 5 || subalgoritmn < 1) { // Sub-algorithm not in range 1-5
+	    subalgorithm = i;
+            if (subalgorithm > 5 || subalgorithm < 1) { // Sub-algorithm not in range 1-5
               file_valid = 0; // Invalid file 
               error_message = "Sub-algorithm not in range 1-5";
               return 0;
@@ -244,8 +387,8 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
      }
       
     fclose (file);
-//    update_message(app_wdgts, "Archivo cargado"); //Actualizar mensaje de notificacion
-//    update(); FUNCIÓN QUE NO ESTÁ HECHA
+  }
+
 printf("\n");
     for (int index = 0; index < number_of_processes; index++ ) {
    	printf("%d", *(arrivaltimes_array+index) );
@@ -258,23 +401,13 @@ printf("\n");
     for (int index = 0; index < number_of_processes; index++ ) {
    	printf("%d", *(priorities_array+index) );
     }
-    pq = newNode(*(arrivaltimes_array+0), *(workunits_array+0), (*(workunits_array+0))*50, 0, 0); //arrive_time, work_units, number_of_terms, sum_pi, priority
+
+// PUTS NODES OF PROCESS IN THE arrivetime_queue
+    arrivetime_queue = newNode(0, *(arrivaltimes_array+0), *(workunits_array+0), 1, 0, 1, *(arrivaltimes_array+0)); //accommodate processes by arrival time
     for (int index = 1; index < number_of_processes; index++ ) {
-        push(&pq, *(arrivaltimes_array+index), *(workunits_array+index), (*(workunits_array+index))*50, 0, 0); //head node, arrive_time, work_units, number_of_terms, sum_pi, priority
-    }    
-/*push(&pq, *(arrivaltimes_array+1), *(workunits_array+1), (*(workunits_array+1))*50, 0, 0); //head node, arrive_time, work_units, number_of_terms, sum_pi, priority
-push(&pq, *(arrivaltimes_array+2), *(workunits_array+2), (*(workunits_array+2))*50, 0, 0); //head node, arrive_time, work_units, number_of_terms, sum_pi, priority
-push(&pq, *(arrivaltimes_array+3), *(workunits_array+3), (*(workunits_array+3))*50, 0, 0); //head node, arrive_time, work_units, number_of_terms, sum_pi, priority
-push(&pq, *(arrivaltimes_array+4), *(workunits_array+4), (*(workunits_array+4))*50, 0, 0); //head node, arrive_time, work_units, number_of_terms, sum_pi, priority*/
-printf("\n");  
-    while (!isEmpty(&pq)) { 
-        printf("%d ", peek_arrivetime(&pq)); 
-        pop(&pq); 
+        push(&arrivetime_queue, index, *(arrivaltimes_array+index), *(workunits_array+index), 1, 0, 1, *(arrivaltimes_array+index)); //accommodate processes by arrival time
     } 
-    free(arrivaltimes_array); // Un-reserve the array
-    free(workunits_array); // Un-reserve the array
-    free(priorities_array); // Un-reserve the array
-  }
+
   return 0;
 }
 
@@ -315,13 +448,36 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
         open_message_dialog (error_message);
      } else { //Open file is valid
         open_resolve_window (app_wdgts);
+        switch (algorithm)
+        {
+   	   case 1: // FCFS Algorithm
+	       break;
+	   case 2: // SJF Algorithm  
+               execute_sjf(app_wdgts);      
+	       break; 
+	   case 3: // RR Algorithm
+	       break;
+	   case 4: // PS Algorithm
+	       break;
+	   case 5: // PSRR Algorithm
+	       break;
+	   case 6: // MQS Algorithm FALTA AGREGAR CÓDIGO AQUÍ***********
+	       break;
+	   case 7: // MFQS Algorithm FALTA AGREGAR CÓDIGO AQUÍ**********
+	       break;
+        }
      }
   }
   file_valid = 1; // Reset the validity value to its standard value
+
+  free(arrivaltimes_array); // Un-reserve the array
+  free(workunits_array); // Un-reserve the array
+  free(priorities_array); // Un-reserve the array
   return 0;
 }
 
 int open_message_dialog (gpointer data)
+//Function that opens the error dialog message
 {
   GtkWidget *dialog;
   GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
@@ -426,6 +582,12 @@ void open_resolve_window (app_widgets *app_wdgts)
      window_resolve = GTK_WIDGET(gtk_builder_get_object(builder, "window_resolve"));
 
      app_wdgts->windows = g_slist_prepend (app_wdgts->windows, window_resolve);  //Agregar ventana a la lista
+
+     // Get pointers to widgets here
+     app_wdgts->workunits_label = GTK_WIDGET(gtk_builder_get_object(builder, "workunits_label"));
+     app_wdgts->arrivaltime_label = GTK_WIDGET(gtk_builder_get_object(builder, "arrivaltime_label"));
+     app_wdgts->processid_label = GTK_WIDGET(gtk_builder_get_object(builder, "processid_label"));
+     app_wdgts->sumpi_label = GTK_WIDGET(gtk_builder_get_object(builder, "sumpi_label"));
 
      g_signal_connect (G_OBJECT (window_resolve), "destroy", G_CALLBACK (on_window_destroy), app_wdgts);  //Conectar señales
 

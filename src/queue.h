@@ -10,10 +10,12 @@ Implementación del Queue obtenida de: https://www.geeksforgeeks.org/priority-qu
 // Node 
 typedef struct node { 
     //Variables of the node process
+    int id;
     int arrive_time;
     int work_units;
     int number_of_terms;
-    int sum_pi; 
+    long double sum_pi;
+    long long int fact; 
     int priority; // Lower values indicate higher priority 
   
     struct node* next; 
@@ -21,18 +23,27 @@ typedef struct node {
 } Node; 
   
 // Function to Create A New Node 
-Node* newNode(int arrive_time, int work_units, int number_of_terms, int sum_pi, int priority) 
+Node* newNode(int id, int arrive_time, int work_units, int number_of_terms, long double sum_pi, long long int fact, int priority) 
 { 
     Node* temp = (Node*)malloc(sizeof(Node)); 
+    temp->id = id; 
     temp->arrive_time = arrive_time; 
     temp->work_units = work_units; 
     temp->number_of_terms = number_of_terms; 
     temp->sum_pi = sum_pi; 
+    temp->fact = fact;
     temp->priority = priority; 
     temp->next = NULL; 
   
     return temp; 
 } 
+
+// PEEK OPERATIONS
+// Return the id at head 
+int peek_id(Node** head) 
+{ 
+    return (*head)->id; 
+}
   
 // Return the arrive_time at head 
 int peek_arrivetime(Node** head) 
@@ -53,9 +64,15 @@ int peek_numberofterms(Node** head)
 }  
 
 // Return the sum_pi at head 
-int peek_sumpi(Node** head) 
+long double peek_sumpi(Node** head) 
 { 
     return (*head)->sum_pi; 
+} 
+
+// Return the fact at head 
+long long int peek_fact(Node** head) 
+{ 
+    return (*head)->fact; 
 } 
 
 // Return the priority at head 
@@ -63,7 +80,34 @@ int peek_priority(Node** head)
 { 
     return (*head)->priority; 
 }      
-  
+ 
+
+//SET OPERATIONS
+// Set the number_of_terms at head 
+void set_numberofterms(Node** head, int number_of_terms) 
+{ 
+    (*head)->number_of_terms = number_of_terms; 
+}  
+
+// Set the sum_pi at head 
+void set_sumpi(Node** head, long double sum_pi) 
+{ 
+    (*head)->sum_pi = sum_pi; 
+} 
+
+// Set the fact at head 
+void set_fact(Node** head, long long int fact) 
+{ 
+    (*head)->fact = fact; 
+} 
+
+// Set the priority at head 
+void set_priority(Node** head, int priority) 
+{ 
+    (*head)->priority = priority; 
+}      
+
+//POP
 // Removes the element with the 
 // highest priority form the list 
 void pop(Node** head) 
@@ -72,19 +116,20 @@ void pop(Node** head)
     (*head) = (*head)->next; 
     free(temp); 
 } 
-  
+ 
+//PUSH 
 // Function to push according to priority 
-void push(Node** head, int arrive_time, int work_units, int number_of_terms, int sum_pi, int p) 
+void push(Node** head, int id, int arrive_time, int work_units, int number_of_terms, long double sum_pi, long long int fact, int p) 
 { 
     Node* start = (*head); 
   
     // Create new Node 
-    Node* temp = newNode(arrive_time, work_units, number_of_terms, sum_pi, p); 
+    Node* temp = newNode(id, arrive_time, work_units, number_of_terms, sum_pi, fact, p); 
   
     // Special Case: The head of list has lesser 
     // priority than new node. So insert new 
     // node before head node and change head node. 
-    if ((*head)->priority < p) { 
+    if ((*head)->priority > p) { 
   
         // Insert New Node before head 
         temp->next = *head; 
@@ -104,14 +149,15 @@ void push(Node** head, int arrive_time, int work_units, int number_of_terms, int
         start->next = temp; 
     } 
 } 
-  
+
+//ISEMPTY 
 // Function to check is list is empty 
 int isEmpty(Node** head) 
 { 
     return (*head) == NULL; 
 } 
   
-// Driver code 
+// EXAMPLE CODE 
 /*int main() 
 { 
     // Create a Priority Queue 
