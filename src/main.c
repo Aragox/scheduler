@@ -47,6 +47,7 @@ typedef struct {
 
 int open_message_dialog ();
 void open_resolve_window (app_widgets *app_wdgts);
+void update (int time);
 
 // void execute_fcfs(); SIN IMPLEMENTAR
 void execute_sjf(); 
@@ -148,7 +149,7 @@ void taylor_series(int workunits, int numberoftermsdone, long double sumpi, long
    set_fact(&ready_queue, fact); // Set factorial  
 }
 
-void execute_sjf(app_widgets *app_wdgts)
+void execute_sjf_NOexpro(app_widgets *app_wdgts)
 {
   ready_queue = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
   pop(&arrivetime_queue); //remove head in arrivetime_queue 
@@ -162,6 +163,8 @@ Actualizar datos de window_resolve
 Aumentar contador de tiempo
 Si se terminó todo el trabajo del proceso 
    pop(&ready_queue)
+else 
+   Restar unidades de trabajo de la prioridad del proceso actual (head de ready_queue)
 Si arrivetime_queue no está vacío
    Obtener tiempo de llegada  peek_arrivetime(&arrivetime_queue)
    Si tiempo de llegada <= tiempo contado
@@ -174,11 +177,12 @@ Si arrivetime_queue no está vacío
 
   do {
    printf("\n");
+   printf("\n");
    printf("Process ID: %d", peek_id(&ready_queue)); 
 
    taylor_series(peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue)); 
 
-   update_window_resolve(app_wdgts, 750000);
+   update_window_resolve(app_wdgts, 250000);
 
    sec = sec + 1;
 
@@ -186,7 +190,12 @@ Si arrivetime_queue no está vacío
       printf("\n");
       printf("COMPLETE!!: %d", peek_id(&ready_queue));     
       pop(&ready_queue); //remove head in ready_queue
+   } else {
+        set_priority(&ready_queue, peek_priority(&ready_queue) - work_to_be_done); // Decrease priority
+	printf("\n");
+	printf("PRIORITY: %d", peek_priority(&ready_queue)); 
    }
+
    if (!isEmpty(&arrivetime_queue)) { // arrivetime_queue is not empty
       printf("\n");
       printf("actual_time: %d", sec); 
@@ -470,8 +479,10 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
         {
    	   case 1: // FCFS Algorithm
 	       break;
-	   case 2: // SJF Algorithm  
-               execute_sjf(app_wdgts);      
+	   case 2: // SJF Algorithm 
+               if (!expropriation) { 
+                  execute_sjf_NOexpro(app_wdgts); 
+               }     
 	       break; 
 	   case 3: // RR Algorithm
 	       break;
