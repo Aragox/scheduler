@@ -26,6 +26,7 @@ int* priorities_array;
 //Queues for schedulig algorithms
 Node* arrivetime_queue; // queue of processes ordered by arrival times
 Node* ready_queue; // queue of ready processes for ejecution
+Node* ready_queue2; // queue of ready processes for ejecution
 
 gpointer error_message = ""; // Stores the error message to display in the error dialogue
 
@@ -46,11 +47,12 @@ typedef struct {
 } app_widgets;
 
 int open_message_dialog ();
-void open_resolve_window (app_widgets *app_wdgts);
+void open_resolve_window ();
 void update (int time);
 
 // void execute_fcfs(); SIN IMPLEMENTAR
-void execute_sjf(); 
+void execute_sjf_NOexpro(app_widgets *app_wdgts); 
+//void execute_sjf_expro(app_widgets *app_wdgts); SIN IMPLEMENTAR
 //void execute_rr(); SIN IMPLEMENTAR
 //void execute_ps(); SIN IMPLEMENTAR
 //void execute_psrr(); SIN IMPLEMENTAR
@@ -62,23 +64,24 @@ void execute_sjf();
 ---------------------------------------------------------------------------------------------------------------------------------------------
 #############################################################################################################################################*/
 /*FUNCTION THAT SHOWS DATA IN WINDOW_RESOLVE*/
-void update_window_resolve(app_widgets *app_wdgts, int time){
+void update_window_resolve(app_widgets *app_wdgts, int time, Node** head){
 // Function that shows data in the window_resolve
    char buffer[50];  //Shows data in the window_resolve
-   sprintf(buffer, "%d", peek_workunits(&ready_queue)); 
+   sprintf(buffer, "%d", peek_workunits(head)); 
    gtk_label_set_text((GtkLabel*)app_wdgts->workunits_label, buffer);
-   sprintf(buffer, "%d", peek_arrivetime(&ready_queue)); 
+   sprintf(buffer, "%d", peek_arrivetime(head)); 
    gtk_label_set_text((GtkLabel*)app_wdgts->arrivaltime_label, buffer);
-   sprintf(buffer, "%d", peek_id(&ready_queue)); 
+   sprintf(buffer, "%d", peek_id(head)); 
    gtk_label_set_text((GtkLabel*)app_wdgts->processid_label, buffer);
-   sprintf(buffer, "%Lf", (long double)((peek_sumpi(&ready_queue))/2)); 
+   sprintf(buffer, "%Lf", (long double)((peek_sumpi(head))/2)); 
    gtk_label_set_text((GtkLabel*)app_wdgts->sumpi_label, buffer);
-   sprintf(buffer, "%d", peek_numberofterms(&ready_queue)); 
+   sprintf(buffer, "%d", peek_numberofterms(head)); 
    gtk_label_set_text((GtkLabel*)app_wdgts->numberoftermsdone_label, buffer);
-   sprintf(buffer, "%d", peek_workunits(&ready_queue)); 
+   sprintf(buffer, "%d", peek_workunits(head)); 
    gtk_label_set_text((GtkLabel*)app_wdgts->workunits_label2, buffer);
    update(time);
 }
+
 /*###########################################################################################################################################
 ---------------------------------------------------------------------------------------------------------------------------------------------
 #############################################################################################################################################*/
@@ -107,7 +110,7 @@ int power(int x, unsigned int y)
 } 
 
 
-void taylor_series(int workunits, int numberoftermsdone, long double sumpi, long long int fact)
+void taylor_series(int workunits, int numberoftermsdone, long double sumpi, long long int fact, Node** head)
 /* Function to execute taylor series for an expropiative or non expropiative algorithm */
  {
    int totalnumberofterms = workunits;
@@ -144,12 +147,17 @@ void taylor_series(int workunits, int numberoftermsdone, long double sumpi, long
       sumpi = sumpi + 1; //Since series starts with 1
    }
 
-   set_sumpi(&ready_queue, sumpi); // Set sumpi 
-   set_numberofterms(&ready_queue, numberoftermsdone); // Set number of terms 
-   set_fact(&ready_queue, fact); // Set factorial  
+   // SET NODE DATA FOR HEAD THAT BELONGS TO A QUEUE 
+   set_sumpi((head), sumpi); // Set sumpi 
+   set_numberofterms((head), numberoftermsdone); // Set number of terms 
+   set_fact((head), fact); // Set factorial  
 }
 
+//void execute_sjf_expro(app_widgets *app_wdgts)
+// SJF EXPROPRIATIVE
+
 void execute_sjf_NOexpro(app_widgets *app_wdgts)
+// SJF NO EXPROPRIATIVE
 {
   ready_queue = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
   pop(&arrivetime_queue); //remove head in arrivetime_queue 
@@ -173,16 +181,16 @@ Si arrivetime_queue no está vacío
 } While ready_queue no está vacío || arrivetime_queue no está vacío*/
   int sec = 0; // Time count  
 
-   update_window_resolve(app_wdgts, 1000000); // Show data before do while
+   update_window_resolve(app_wdgts, 1000000, &ready_queue); // Show data before do while
 
   do {
    printf("\n");
    printf("\n");
    printf("Process ID: %d", peek_id(&ready_queue)); 
 
-   taylor_series(peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue)); 
+   taylor_series(peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), &ready_queue); 
 
-   update_window_resolve(app_wdgts, 250000);
+   update_window_resolve(app_wdgts, 250000, &ready_queue);
 
    sec = sec + 1;
 
