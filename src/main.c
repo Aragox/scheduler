@@ -159,6 +159,8 @@ void execute_sjf_expro(app_widgets *app_wdgts)
   ready_queue = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
   pop(&arrivetime_queue); //remove head in arrivetime_queue 
 
+  ready_queue2 = NULL; 
+
   int queue_turn = 1;
 
   int sec = 0; // Time count  
@@ -166,13 +168,16 @@ void execute_sjf_expro(app_widgets *app_wdgts)
    update_window_resolve(app_wdgts, 1000000, &ready_queue); // Show data before do while
 
   do {
+
+   if (queue_turn == 1) { // Turn of ready_queue 
    printf("\n");
    printf("\n");
    printf("Process ID: %d", peek_id(&ready_queue)); 
-
-   if (queue_turn == 1) { // Turn of ready_queue 
       taylor_series(peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), &ready_queue); 
    } else { // Turn of ready_queue2
+   printf("\n");
+   printf("\n");
+   printf("Process ID: %d", peek_id(&ready_queue2)); 
       taylor_series(peek_workunits(&ready_queue2), peek_numberofterms(&ready_queue2), peek_sumpi(&ready_queue2), peek_fact(&ready_queue2), &ready_queue2); 
    }
 
@@ -266,7 +271,9 @@ if (!isEmpty(&arrivetime_queue)) {
 
    }
 }
+
   } while (!isEmpty(&ready_queue) || !isEmpty(&ready_queue2) || !isEmpty(&arrivetime_queue));
+ //} while (sec < 3 && !isEmpty(&ready_queue));
 }
 
 

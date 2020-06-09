@@ -136,68 +136,80 @@ void pop(Node** head)
 // Function to push according to priority 
 void push(Node** head, int id, int arrive_time, int work_units, int number_of_terms, long double sum_pi, long long int fact, int p, int optional) 
 { 
-    Node* start = (*head); 
-  
-    // Create new Node 
-    Node* temp = newNode(id, arrive_time, work_units, number_of_terms, sum_pi, fact, p, optional);
-  
-    // Special Case: The head of list has lesser 
-    // priority than new node. So insert new 
-    // node before head node and change head node. 
-    if ((*head)->priority > p) { 
-  
-        // Insert New Node before head 
-        temp->next = *head; 
-        (*head) = temp;
+    Node* start = (*head);
 
-    } else {
-        // Traverse the list and find a 
-        // position to insert new node 
-        while (start->next != NULL && 
-               start->next->priority <= p) { 
-            start = start->next; 
-        } 
+    if (start != NULL) { // Head is not null
   
-        // Either at the ends of the list 
-        // or at required position 
-        temp->next = start->next; 
-        start->next = temp; 
-    } 
+	    // Create new Node 
+	    Node* temp = newNode(id, arrive_time, work_units, number_of_terms, sum_pi, fact, p, optional);
+	  
+	    // Special Case: The head of list has lesser 
+	    // priority than new node. So insert new 
+	    // node before head node and change head node. 
+	    if ((*head)->priority > p) { 
+	  
+		// Insert New Node before head 
+		temp->next = *head; 
+		(*head) = temp;
+
+	    } else {
+		// Traverse the list and find a 
+		// position to insert new node 
+		while (start->next != NULL && 
+		       start->next->priority <= p) { 
+		    start = start->next; 
+		} 
+	  
+		// Either at the ends of the list 
+		// or at required position 
+		temp->next = start->next; 
+		start->next = temp; 
+	    } 
+    } else {
+            start = newNode(id, arrive_time, work_units, number_of_terms, sum_pi, fact, p, optional);
+    }
+
 } 
 
 //PUSH HEAD OF QUEUE2 IN QUEUE1
 // Function to push according to priority 
 void push_head(Node** head1, Node** head2)
 { 
-    Node* start = (*head1); 
-  
-    // Create new Node 
-    Node* temp = newNode((*head2)->id, (*head2)->arrive_time, (*head2)->work_units, (*head2)->number_of_terms, (*head2)->sum_pi, (*head2)->fact, (*head2)->priority, (*head2)->optional);
-  
-    // Special Case: The head of list has lesser 
-    // priority than new node. So insert new 
-    // node before head node and change head node. 
-//    if ((*head1)->priority > (*head2)->priority) { 
-    if ((*head1)->priority > temp->priority) { 
-  
-        // Insert New Node before head 
-        temp->next = *head1; 
-        (*head1) = temp;
+    Node* start = (*head1);
 
-    } else {
-        // Traverse the list and find a 
-        // position to insert new node 
-        while (start->next != NULL && 
-//               start->next->priority <= (*head2)->priority) { 
-               start->next->priority <= temp->priority) { 
-            start = start->next; 
-        } 
+    if (start != NULL) { // Head is not null
   
-        // Either at the ends of the list 
-        // or at required position 
-        temp->next = start->next; 
-        start->next = temp; 
-    } 
+	    // Create new Node 
+	    Node* temp = newNode((*head2)->id, (*head2)->arrive_time, (*head2)->work_units, (*head2)->number_of_terms, (*head2)->sum_pi, (*head2)->fact, (*head2)->priority, (*head2)->optional);
+	  
+	    // Special Case: The head of list has lesser 
+	    // priority than new node. So insert new 
+	    // node before head node and change head node. 
+	//    if ((*head1)->priority > (*head2)->priority) { 
+	    if ((*head1)->priority > temp->priority) { 
+	  
+		// Insert New Node before head 
+		temp->next = *head1; 
+		(*head1) = temp;
+
+	    } else {
+		// Traverse the list and find a 
+		// position to insert new node 
+		while (start->next != NULL && 
+	//               start->next->priority <= (*head2)->priority) { 
+		       start->next->priority <= temp->priority) { 
+		    start = start->next; 
+		} 
+	  
+		// Either at the ends of the list 
+		// or at required position 
+		temp->next = start->next; 
+		start->next = temp; 
+	    }
+     } else {
+	    // Create new Node 
+	    start = newNode((*head2)->id, (*head2)->arrive_time, (*head2)->work_units, (*head2)->number_of_terms, (*head2)->sum_pi, (*head2)->fact, (*head2)->priority, (*head2)->optional);
+     } 
 } 
 
 //ISEMPTY 
