@@ -2,7 +2,6 @@
 #include "queue.h"
 #include <gtk/gtk.h>
 #include <time.h>
-//#include <math.h>
 
 //To check if a file is valid
 int file_valid = 1; 
@@ -120,20 +119,18 @@ void taylor_series(int workunits, int numberoftermsdone, long double sumpi, long
 
    if (expropriation) {
 
-     int msec = 0; // Time count 
-     clock_t before = clock(); // Begin timer
+     int time = 0; //Count 
+     if (peek_numberofterms((head)) < peek_workunits((head))) { // If process is NOT finished
+	     do {
+		  fact = fact*numberoftermsdone;
+		  sumpi = sumpi + (power(2,numberoftermsdone)/fact) ;
 
-     do {
-          fact = fact*numberoftermsdone;
-          sumpi = sumpi + (power(2,numberoftermsdone)/fact) ;
+		  numberoftermsdone = numberoftermsdone + 1;
 
-          numberoftermsdone = numberoftermsdone + 1;
+                  time = time + (quantum*0.8);
 
-          clock_t difference = clock() - before;
-          msec = difference * 1000 / CLOCKS_PER_SEC; // Get miliseconds
-
-     } while ((msec < time_available) && (numberoftermsdone < totalnumberofterms));
-
+	     } while ((time < time_available) && (numberoftermsdone < totalnumberofterms));
+     }
    } else {
     while (((numberoftermsdone - original) < terms_to_do_now) && (numberoftermsdone < totalnumberofterms)) {
           fact = (long long int)(fact*numberoftermsdone);
@@ -153,15 +150,133 @@ void taylor_series(int workunits, int numberoftermsdone, long double sumpi, long
    set_fact((head), fact); // Set factorial  
 }
 
-//void execute_sjf_expro(app_widgets *app_wdgts)
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//#######################################################################################################################################################################################################
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void execute_sjf_expro(app_widgets *app_wdgts)
 // SJF EXPROPRIATIVE
+{
+  ready_queue = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
+  pop(&arrivetime_queue); //remove head in arrivetime_queue 
 
+  int queue_turn = 1;
+
+  int sec = 0; // Time count  
+
+   update_window_resolve(app_wdgts, 1000000, &ready_queue); // Show data before do while
+
+  do {
+   printf("\n");
+   printf("\n");
+   printf("Process ID: %d", peek_id(&ready_queue)); 
+
+   if (queue_turn == 1) { // Turn of ready_queue 
+      taylor_series(peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), &ready_queue); 
+   } else { // Turn of ready_queue2
+      taylor_series(peek_workunits(&ready_queue2), peek_numberofterms(&ready_queue2), peek_sumpi(&ready_queue2), peek_fact(&ready_queue2), &ready_queue2); 
+   }
+
+   update_window_resolve(app_wdgts, 250000, &ready_queue);
+
+   sec = sec + 1;
+if (queue_turn == 1) {
+   if (peek_numberofterms(&ready_queue) >= peek_workunits(&ready_queue)) { // If process finished all work
+      printf("\n");
+      printf("COMPLETE!!: %d", peek_id(&ready_queue));     
+      pop(&ready_queue); //remove head in ready_queue
+   } else {
+        set_priority(&ready_queue, peek_priority(&ready_queue) - work_to_be_done); // Decrease priority
+	printf("\n");
+	printf("PRIORITY: %d", peek_priority(&ready_queue)); 
+
+        push_head(&ready_queue2, &ready_queue); 
+        pop(&ready_queue); //remove head in ready_queue
+   }
+} else {
+   if (peek_numberofterms(&ready_queue2) >= peek_workunits(&ready_queue2)) { // If process finished all work
+      printf("\n");
+      printf("COMPLETE!!: %d", peek_id(&ready_queue2));     
+      pop(&ready_queue2); //remove head in ready_queue2
+   } else {
+        set_priority(&ready_queue2, peek_priority(&ready_queue2) - work_to_be_done); // Decrease priority
+	printf("\n");
+	printf("PRIORITY: %d", peek_priority(&ready_queue2)); 
+
+        push_head(&ready_queue, &ready_queue2); 
+        pop(&ready_queue2); //remove head in ready_queue2
+   }
+}
+if (!isEmpty(&arrivetime_queue)) {
+   if (isEmpty(&ready_queue) && queue_turn == 1) { // ready_queue is empty and is turn of ready_queue2
+      ready_queue = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
+      sec = peek_arrivetime(&arrivetime_queue);
+      printf("\n");
+      printf("actual_time: %d", sec); 
+      printf("\n");
+      printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue));
+      pop(&arrivetime_queue); //remove head in arrivetime_queue 
+   } else {
+
+	   if (!isEmpty(&ready_queue) && queue_turn == 1) { // arrivetime_queue is not empty
+	      printf("\n");
+	      printf("actual_time: %d", sec); 
+	      printf("\n");
+	      printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue));
+
+	      if (peek_arrivetime(&arrivetime_queue) <= sec) {
+		  push(&ready_queue, peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue  
+		  pop(&arrivetime_queue); //remove head in arrivetime_queue 
+	      }
+	   }
+   }
+   if (isEmpty(&ready_queue2) && queue_turn == -1) { // ready_queue is empty and is turn of ready_queue2
+      ready_queue2 = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
+      sec = peek_arrivetime(&arrivetime_queue);
+      printf("\n");
+      printf("actual_time: %d", sec); 
+      printf("\n");
+      printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue));
+      pop(&arrivetime_queue); //remove head in arrivetime_queue 
+   } else {
+
+	   if (!isEmpty(&ready_queue2) && queue_turn == -1) { // arrivetime_queue is not empty
+	      printf("\n");
+	      printf("actual_time: %d", sec); 
+	      printf("\n");
+	      printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue));
+
+	      if (peek_arrivetime(&arrivetime_queue) <= sec) {
+		  push(&ready_queue2, peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue  
+		  pop(&arrivetime_queue); //remove head in arrivetime_queue 
+	      }
+	   }
+   }
+} else {
+   if (isEmpty(&ready_queue) && queue_turn == 1) { // ready_queue is empty and is turn of ready_queue2
+
+      queue_turn = queue_turn * -1; // Change queue turn
+
+   } else {
+
+     if (isEmpty(&ready_queue2) && queue_turn == -1) {
+
+        queue_turn = queue_turn * -1; // Change queue turn
+
+     }
+
+   }
+}
+  } while (!isEmpty(&ready_queue) || !isEmpty(&ready_queue2) || !isEmpty(&arrivetime_queue));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 void execute_sjf_NOexpro(app_widgets *app_wdgts)
 // SJF NO EXPROPRIATIVE
 {
   ready_queue = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
   pop(&arrivetime_queue); //remove head in arrivetime_queue 
-
 //PSEUDOCÓDIGO DEL ALGORITMO
 /*
 Empezar a contar tiempo
@@ -204,15 +319,27 @@ Si arrivetime_queue no está vacío
 	printf("PRIORITY: %d", peek_priority(&ready_queue)); 
    }
 
-   if (!isEmpty(&arrivetime_queue)) { // arrivetime_queue is not empty
+   if (isEmpty(&ready_queue) && !isEmpty(&arrivetime_queue)) { // ready_queue is empty and arrivetime_queue is not empty
+      ready_queue = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
+      sec = peek_arrivetime(&arrivetime_queue);
       printf("\n");
       printf("actual_time: %d", sec); 
       printf("\n");
-      printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue)); 
-      if (peek_arrivetime(&arrivetime_queue) <= sec) {
-         push(&ready_queue, peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
-         pop(&arrivetime_queue); //remove head in arrivetime_queue 
-      } 
+      printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue));
+      pop(&arrivetime_queue); //remove head in arrivetime_queue 
+   } else {
+
+	   if (!isEmpty(&ready_queue) && !isEmpty(&arrivetime_queue)) { // arrivetime_queue is not empty
+	      printf("\n");
+	      printf("actual_time: %d", sec); 
+	      printf("\n");
+	      printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue));
+
+	      if (peek_arrivetime(&arrivetime_queue) <= sec) {
+		  push(&ready_queue, peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue  
+		  pop(&arrivetime_queue); //remove head in arrivetime_queue 
+	      }
+	   }
    }
 
   } while (!isEmpty(&ready_queue) || !isEmpty(&arrivetime_queue));
@@ -490,6 +617,8 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
 	   case 2: // SJF Algorithm 
                if (!expropriation) { 
                   execute_sjf_NOexpro(app_wdgts); 
+               } else {
+                  execute_sjf_expro(app_wdgts);
                }     
 	       break; 
 	   case 3: // RR Algorithm
