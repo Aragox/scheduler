@@ -23,71 +23,92 @@ typedef struct node {
     struct node* next; 
   
 } Node; 
-  
-// Function to Create A New Node 
-Node* newNode(int id, int arrive_time, int work_units, int number_of_terms, long double sum_pi, long long int fact, int priority, int optional) 
-{ 
-    Node* temp = (Node*)malloc(sizeof(Node)); 
-    temp->id = id; 
-    temp->arrive_time = arrive_time; 
-    temp->work_units = work_units; 
-    temp->number_of_terms = number_of_terms; 
-    temp->sum_pi = sum_pi; 
-    temp->fact = fact;
-    temp->priority = priority;
-    temp->optional = optional; 
-    temp->next = NULL; 
-  
-    return temp; 
-} 
+ 
+
+// Operations that change the direction of variables returned. YEAH!!!
+int change_direction1(int value) {
+    return value;
+}
+
+long double change_direction2(long double value) {
+    return value;
+}
+
+long long int change_direction3(long long int value) {
+    return value;
+}
 
 // PEEK OPERATIONS
 // Return the id at head 
 int peek_id(Node** head) 
 { 
-    return (*head)->id; 
+    if ((*head) == NULL) {
+       return -1;
+    }
+    return change_direction1((*head)->id); 
 }
   
 // Return the arrive_time at head 
 int peek_arrivetime(Node** head) 
 { 
-    return (*head)->arrive_time; 
+    if ((*head) == NULL) {
+       return -1;
+    }
+    return change_direction1((*head)->arrive_time); 
 }
 
 // Return the work_units at head 
 int peek_workunits(Node** head) 
 { 
-    return (*head)->work_units; 
+    if ((*head) == NULL) {
+       return -1;
+    }
+    return change_direction1((*head)->work_units); 
 } 
 
 // Return the number_of_terms at head 
 int peek_numberofterms(Node** head) 
 { 
-    return (*head)->number_of_terms; 
+    if ((*head) == NULL) {
+       return -1;
+    }
+    return change_direction1((*head)->number_of_terms); 
 }  
 
 // Return the sum_pi at head 
 long double peek_sumpi(Node** head) 
 { 
-    return (*head)->sum_pi; 
+    if ((*head) == NULL) {
+       return -1.00000;
+    }
+    return change_direction2((*head)->sum_pi); 
 } 
 
 // Return the fact at head 
 long long int peek_fact(Node** head) 
 { 
-    return (*head)->fact; 
+    if ((*head) == NULL) {
+       return -1;
+    }
+    return change_direction3((*head)->fact); 
 } 
 
 // Return the priority at head 
 int peek_priority(Node** head) 
 { 
-    return (*head)->priority; 
+    if ((*head) == NULL) {
+       return -1;
+    }
+    return change_direction1((*head)->priority); 
 } 
 
 // Return the optional argument at head 
 int peek_optional(Node** head) 
 { 
-    return (*head)->optional; 
+    if ((*head) == NULL) {
+       return -1;
+    }
+    return change_direction1((*head)->optional); 
 }        
  
 
@@ -121,6 +142,41 @@ void set_optional(Node** head, int optional)
 { 
     (*head)->optional = optional; 
 }        
+
+
+// Function to Create A New Node 
+Node* newNode(int id, int arrive_time, int work_units, int number_of_terms, long double sum_pi, long long int fact, int priority, int optional) 
+{ 
+    Node* temp = (Node*)malloc(sizeof(Node)); 
+    temp->id = id; 
+    temp->arrive_time = arrive_time; 
+    temp->work_units = work_units; 
+    temp->number_of_terms = number_of_terms; 
+    temp->sum_pi = sum_pi; 
+    temp->fact = fact;
+    temp->priority = priority;
+    temp->optional = optional; 
+    temp->next = NULL; 
+  
+    return temp; 
+} 
+
+// Function to Create A New Node. It acepts a node as parameter 
+Node* newNode_head(Node** head) 
+{ 
+    Node* temp = (Node*)malloc(sizeof(Node)); 
+    temp->id = peek_id(head); 
+    temp->arrive_time = peek_arrivetime(head); 
+    temp->work_units = peek_workunits(head); 
+    temp->number_of_terms = peek_numberofterms(head); 
+    temp->sum_pi = peek_sumpi(head); 
+    temp->fact = peek_fact(head);
+    temp->priority = peek_priority(head);
+    temp->optional = peek_optional(head); 
+    temp->next = NULL; 
+  
+    return temp; 
+} 
 
 //POP
 // Removes the element with the 
@@ -172,7 +228,7 @@ void push(Node** head, int id, int arrive_time, int work_units, int number_of_te
 } 
 
 //PUSH HEAD OF QUEUE2 IN QUEUE1
-// Function to push according to priority 
+// Function to push according to priority of head2
 void push_head(Node** head1, Node** head2)
 { 
     Node* start = (*head1);
@@ -180,8 +236,8 @@ void push_head(Node** head1, Node** head2)
     if (start != NULL) { // Head is not null
   
 	    // Create new Node 
-	    Node* temp = newNode((*head2)->id, (*head2)->arrive_time, (*head2)->work_units, (*head2)->number_of_terms, (*head2)->sum_pi, (*head2)->fact, (*head2)->priority, (*head2)->optional);
-	  
+	    //Node* temp = newNode((*head2)->id, (*head2)->arrive_time, (*head2)->work_units, (*head2)->number_of_terms, (*head2)->sum_pi, (*head2)->fact, (*head2)->priority, (*head2)->optional);
+	    Node* temp = newNode(peek_id(head2), peek_arrivetime(head2), peek_workunits(head2), peek_numberofterms(head2), peek_sumpi(head2), peek_fact(head2), peek_optional(head2), peek_optional(head2));
 	    // Special Case: The head of list has lesser 
 	    // priority than new node. So insert new 
 	    // node before head node and change head node. 
@@ -208,7 +264,8 @@ void push_head(Node** head1, Node** head2)
 	    }
      } else {
 	    // Create new Node 
-	    start = newNode((*head2)->id, (*head2)->arrive_time, (*head2)->work_units, (*head2)->number_of_terms, (*head2)->sum_pi, (*head2)->fact, (*head2)->priority, (*head2)->optional);
+	    //start = newNode((*head2)->id, (*head2)->arrive_time, (*head2)->work_units, (*head2)->number_of_terms, (*head2)->sum_pi, (*head2)->fact, (*head2)->priority, (*head2)->optional);
+	    start = newNode(peek_id(head2), peek_arrivetime(head2), peek_workunits(head2), peek_numberofterms(head2), peek_sumpi(head2), peek_fact(head2), peek_optional(head2), peek_optional(head2));
      } 
 } 
 
