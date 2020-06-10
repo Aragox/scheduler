@@ -58,12 +58,12 @@ int open_message_dialog ();
 void open_resolve_window ();
 void update (int time);
 
-// void execute_fcfs(app_widgets *app_wdgts); SIN IMPLEMENTAR
+void execute_fcfs(app_widgets *app_wdgts);
 void execute_sjf(app_widgets *app_wdgts); 
 void execute_rr(app_widgets *app_wdgts); 
 void execute_ps(app_widgets *app_wdgts); 
 //void execute_psrr(app_widgets *app_wdgts); SIN IMPLEMENTAR
-//void execute_mqs(app_widgets *app_wdgts); SIN IMPLEMENTAR
+void execute_mqs(app_widgets *app_wdgts);
 //void execute_mfqs(app_widgets *app_wdgts);  SIN IMPLEMENTAR 
 
 
@@ -161,6 +161,63 @@ void taylor_series(int workunits, int numberoftermsdone, long double sumpi, long
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //#######################################################################################################################################################################################################
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void execute_fcfs(app_widgets *app_wdgts)
+{
+
+    ready_queue = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
+    pop(&arrivetime_queue); //remove head in arrivetime_queue 
+
+    int sec = 0; // Time count  
+
+   update_window_resolve(app_wdgts, 1000000, &ready_queue); // Show data before do while
+
+  do {
+   printf("\n");
+   printf("\n");
+   printf("Process ID: %d", peek_id(&arrivetime_queue)); 
+
+   taylor_series(peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), &ready_queue); 
+
+   update_window_resolve(app_wdgts, 250000, &ready_queue);
+
+   sec = sec + 1;
+
+   if (peek_numberofterms(&ready_queue) >= peek_workunits(&ready_queue)) { // If process finished all work
+      printf("\n");
+      printf("COMPLETE!!: %d", peek_id(&ready_queue));     
+      pop(&ready_queue); //remove head in ready_queue
+   } else {
+        set_priority(&ready_queue, peek_priority(&ready_queue) - work_to_be_done); // Decrease priority
+  printf("\n");
+  printf("PRIORITY: %d", peek_priority(&ready_queue)); 
+   }
+
+   if (isEmpty(&ready_queue) && !isEmpty(&arrivetime_queue)) { // ready_queue is empty and arrivetime_queue is not empty
+      ready_queue = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
+      sec = peek_arrivetime(&arrivetime_queue);
+      printf("\n");
+      printf("actual_time: %d", sec); 
+      printf("\n");
+      printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue));
+      pop(&arrivetime_queue); //remove head in arrivetime_queue 
+   } else {
+
+   if (!isEmpty(&arrivetime_queue)) { // arrivetime_queue is not empty
+      printf("\n");
+      printf("actual_time: %d", sec); 
+      printf("\n");
+      printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue)); 
+
+   }
+  }
+
+  } while (!isEmpty(&ready_queue) || !isEmpty(&arrivetime_queue));
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 void execute_rr(app_widgets *app_wdgts)
 // RR
@@ -443,6 +500,10 @@ void execute_MQS(app_widgets *app_wdgts)
 
 
 }
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 void execute_sjf(app_widgets *app_wdgts)
 // SJF 
 {
@@ -891,6 +952,7 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
         switch (algorithm)
         {
        case 1: // FCFS Algorithm
+	       execute_fcfs(app_wdgts);
          break;
      case 2: // SJF Algorithm 
                execute_sjf(app_wdgts);    
@@ -904,7 +966,7 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
      case 5: // PSRR Algorithm
          break;
      case 6: // MQS Algorithm FALTA AGREGAR CÓDIGO AQUÍ***********
-      execute_MQS(app_wdgts);
+      	       execute_MQS(app_wdgts);
          break;
      case 7: // MFQS Algorithm FALTA AGREGAR CÓDIGO AQUÍ**********
          break;
@@ -1085,4 +1147,3 @@ int main(int argc, char *argv[])
 /*void x(GtkButton *button, app_widgets *app_wdgts)
 {
 }*/
-
