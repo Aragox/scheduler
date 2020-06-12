@@ -57,9 +57,9 @@ typedef struct {
     GtkWidget *processid_label; //Label in the window_resolve 
     GtkWidget *priority_label; //Label in the window_resolve
     GtkWidget *sumpi_label; //Label in the window_resolve
+    GtkWidget *termsprogress_bar; //Progress bar in the window_resolve
     GtkWidget *numberoftermsdone_label; //Label in the window_resolve
     GtkWidget *workunits_label2; //Label in the window_resolve
-//termsprogress_bar
 } app_widgets;
 
 int open_message_dialog ();
@@ -96,9 +96,13 @@ void update_window_resolve(app_widgets *app_wdgts, int time, Node** head, char *
    gtk_label_set_text((GtkLabel*)app_wdgts->workunits_label2, buffer);
    sprintf(buffer, "%d", peek_priority(head)); 
    gtk_label_set_text((GtkLabel*)app_wdgts->priority_label, buffer);
- 
+   float percentage;
+   percentage = (float)peek_numberofterms(head)/peek_workunits(head);
+   sprintf(buffer, "%f", percentage*100);
+   strcat(buffer, "%"); 
+   gtk_progress_bar_set_text(GTK_PROGRESS_BAR (app_wdgts->termsprogress_bar), buffer);
+   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (app_wdgts->termsprogress_bar), percentage);
    gtk_label_set_text((GtkLabel*)app_wdgts->algorithm_name, name);
-
    update(time);
 }
 
@@ -1361,7 +1365,8 @@ void open_resolve_window (app_widgets *app_wdgts)
      app_wdgts->numberoftermsdone_label = GTK_WIDGET(gtk_builder_get_object(builder, "numberoftermsdone_label"));
      app_wdgts->workunits_label2 = GTK_WIDGET(gtk_builder_get_object(builder, "workunits_label2"));
      app_wdgts->algorithm_name = GTK_WIDGET(gtk_builder_get_object(builder, "algorithm_name")); 
-     app_wdgts->priority_label = GTK_WIDGET(gtk_builder_get_object(builder, "priority_label"));
+     app_wdgts->priority_label = GTK_WIDGET(gtk_builder_get_object(builder, "priority_label"));	
+     app_wdgts->termsprogress_bar = GTK_WIDGET(gtk_builder_get_object(builder, "termsprogress_bar"));
 
      g_signal_connect (G_OBJECT (window_resolve), "destroy", G_CALLBACK (on_window_destroy), app_wdgts);  //Conectar señales
 
