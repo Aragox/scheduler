@@ -580,7 +580,7 @@ void execute_MQS(app_widgets *app_wdgts)
 void execute_MFQS(app_widgets *app_wdgts)
 {
 
-  Node* ready_queue = newNode(peek_id(&arrivetime_queueMQS1), peek_arrivetime(&arrivetime_queueMQS1), peek_workunits(&arrivetime_queueMQS1), peek_numberofterms(&arrivetime_queueMQS1), peek_sumpi(&arrivetime_queueMQS1), peek_fact(&arrivetime_queueMQS1), peek_optional(&arrivetime_queueMQS1), peek_optional(&arrivetime_queueMQS1)); //get head node from arrivetime_queue
+  Node* ready_queue = newNode(peek_id(&arrivetime_queueMQS1), peek_arrivetime(&arrivetime_queueMQS1), peek_workunits(&arrivetime_queueMQS1), peek_numberofterms(&arrivetime_queueMQS1), peek_sumpi(&arrivetime_queueMQS1), peek_fact(&arrivetime_queueMQS1), peek_optional(&arrivetime_queueMQS1), peek_arrivetime(&arrivetime_queueMQS1)); //get head node from arrivetime_queue
   pop(&arrivetime_queueMQS1); //remove head in arrivetime_queue 
 
   Node* arrivetime_queueMQS2 = NULL;
@@ -603,14 +603,14 @@ void execute_MFQS(app_widgets *app_wdgts)
    } else {
   printf("\n");
   printf("PRIORITY: %d", peek_priority(&ready_queue)); 
-
+    if (!(!isEmpty(&arrivetime_queueMQS1) && peek_arrivetime(&arrivetime_queueMQS1) > sec)) { 
       if(peek_priority(&ready_queue) == 1){ // asign process node to queue
           if (isEmpty(&arrivetime_queueMQS2)) {
             
-              arrivetime_queueMQS2 = newNode_head(&ready_queue);
+              arrivetime_queueMQS2 = newNode(peek_id(&ready_queue), peek_arrivetime(&ready_queue), peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), peek_optional(&ready_queue), peek_priority(&ready_queue));
 
           } else {
-              push_head(&arrivetime_queueMQS2, &ready_queue); //get head node from ready_queue 
+              push(&arrivetime_queueMQS2, peek_id(&ready_queue), peek_arrivetime(&ready_queue), peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), peek_optional(&ready_queue), peek_priority(&ready_queue)); //get head node from ready_queue 
           }
             
 
@@ -618,10 +618,10 @@ void execute_MFQS(app_widgets *app_wdgts)
       else if(peek_priority(&ready_queue) == 2){ // asign process node to queue
           if (isEmpty(&arrivetime_queueMQS3)) {
             
-              arrivetime_queueMQS3 = newNode_head(&ready_queue);
+              arrivetime_queueMQS3 = newNode(peek_id(&ready_queue), peek_arrivetime(&ready_queue), peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), peek_optional(&ready_queue), peek_priority(&ready_queue));
 
           } else {
-              push_head(&arrivetime_queueMQS3, &ready_queue); //get head node from ready_queue 
+              push(&arrivetime_queueMQS3, peek_id(&ready_queue), peek_arrivetime(&ready_queue), peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), peek_optional(&ready_queue), peek_priority(&ready_queue)); //get head node from ready_queue 
           }
             
 
@@ -629,18 +629,19 @@ void execute_MFQS(app_widgets *app_wdgts)
       else{
           if (isEmpty(&arrivetime_queueMQS4)) { // asign process node to queue 
             
-              arrivetime_queueMQS4 = newNode_head(&ready_queue);
+              arrivetime_queueMQS4 = newNode(peek_id(&ready_queue), peek_arrivetime(&ready_queue), peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), peek_optional(&ready_queue), peek_priority(&ready_queue));
 
           } else {
-            push_head(&arrivetime_queueMQS4, &ready_queue); //get head node from ready_queue 
+              push(&arrivetime_queueMQS4, peek_id(&ready_queue), peek_arrivetime(&ready_queue), peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), peek_optional(&ready_queue), peek_priority(&ready_queue)); //get head node from ready_queue 
           }
       }
         pop(&ready_queue); //remove head in ready_queue
+    }
    }
 
 if (!isEmpty(&arrivetime_queueMQS1)) {
    if (isEmpty(&ready_queue)) { // ready_queue is empty and is turn of ready_queue
-      ready_queue = newNode(peek_id(&arrivetime_queueMQS1), peek_arrivetime(&arrivetime_queueMQS1), peek_workunits(&arrivetime_queueMQS1), peek_numberofterms(&arrivetime_queueMQS1), peek_sumpi(&arrivetime_queueMQS1), peek_fact(&arrivetime_queueMQS1), peek_optional(&arrivetime_queueMQS1), peek_optional(&arrivetime_queueMQS1)); //get head node from arrivetime_queue
+      ready_queue = newNode(peek_id(&arrivetime_queueMQS1), peek_arrivetime(&arrivetime_queueMQS1), peek_workunits(&arrivetime_queueMQS1), peek_numberofterms(&arrivetime_queueMQS1), peek_sumpi(&arrivetime_queueMQS1), peek_fact(&arrivetime_queueMQS1), peek_optional(&arrivetime_queueMQS1), peek_arrivetime(&arrivetime_queueMQS1)); //get head node from arrivetime_queue
       if (peek_arrivetime(&arrivetime_queueMQS1) > sec) {
          sec = sec + (peek_arrivetime(&arrivetime_queueMQS1) - sec);
       }
@@ -656,7 +657,7 @@ if (!isEmpty(&arrivetime_queueMQS1)) {
         printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queueMQS1));
 
         if (peek_arrivetime(&arrivetime_queueMQS1) <= sec) {
-      push(&ready_queue, peek_id(&arrivetime_queueMQS1), peek_arrivetime(&arrivetime_queueMQS1), peek_workunits(&arrivetime_queueMQS1), peek_numberofterms(&arrivetime_queueMQS1), peek_sumpi(&arrivetime_queueMQS1), peek_fact(&arrivetime_queueMQS1), peek_optional(&arrivetime_queueMQS1), peek_optional(&arrivetime_queueMQS1)); //get head node from arrivetime_queue  
+      push(&ready_queue, peek_id(&arrivetime_queueMQS1), peek_arrivetime(&arrivetime_queueMQS1), peek_workunits(&arrivetime_queueMQS1), peek_numberofterms(&arrivetime_queueMQS1), peek_sumpi(&arrivetime_queueMQS1), peek_fact(&arrivetime_queueMQS1), peek_optional(&arrivetime_queueMQS1), peek_arrivetime(&arrivetime_queueMQS1)); //get head node from arrivetime_queue  
       pop(&arrivetime_queueMQS1); //remove head in arrivetime_queue 
         }
    }
