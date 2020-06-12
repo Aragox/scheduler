@@ -109,6 +109,15 @@ int peek_optional(Node** head)
        return -1;
     }
     return change_direction1((*head)->optional); 
+} 
+
+// Return the priority at head->next 
+int get_nextpriority(Node** head) 
+{ 
+    if ((*head) == NULL || (*head)->next == NULL) {
+       return -1;
+    }
+    return change_direction1((*head)->next->priority); 
 }        
  
 

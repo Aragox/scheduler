@@ -3,6 +3,9 @@
 #include <gtk/gtk.h>
 #include <time.h>
 
+//To control the execution speed of algorithms
+int wait = 250000;
+
 //To check if a file is valid
 int file_valid = 1; 
 
@@ -49,7 +52,9 @@ typedef struct {
     GtkWidget *main_label; //Label in the main window 
     GtkWidget *workunits_label; //Label in the window_resolve
     GtkWidget *arrivaltime_label; //Label in the window_resolve 
+    GtkWidget *algorithm_name; //Label in the window_resolve
     GtkWidget *processid_label; //Label in the window_resolve 
+    GtkWidget *priority_label; //Label in the window_resolve
     GtkWidget *sumpi_label; //Label in the window_resolve
     GtkWidget *numberoftermsdone_label; //Label in the window_resolve
     GtkWidget *workunits_label2; //Label in the window_resolve
@@ -64,7 +69,7 @@ void execute_fcfs(app_widgets *app_wdgts, Node* arrivetime_queue);
 void execute_sjf(app_widgets *app_wdgts, Node* arrive_queue);
 void execute_rr(app_widgets *app_wdgts, Node* arrivetime_queue); 
 void execute_ps(app_widgets *app_wdgts, Node* arrivetime_queue); 
-//void execute_psrr(app_widgets *app_wdgts); SIN IMPLEMENTAR
+void execute_psrr(app_widgets *app_wdgts, Node* arrivetime_queue);
 void execute_mqs(app_widgets *app_wdgts);
 //void execute_mfqs(app_widgets *app_wdgts);  SIN IMPLEMENTAR 
 
@@ -73,7 +78,7 @@ void execute_mqs(app_widgets *app_wdgts);
 ---------------------------------------------------------------------------------------------------------------------------------------------
 #############################################################################################################################################*/
 /*FUNCTION THAT SHOWS DATA IN WINDOW_RESOLVE*/
-void update_window_resolve(app_widgets *app_wdgts, int time, Node** head){
+void update_window_resolve(app_widgets *app_wdgts, int time, Node** head, char *name){
 // Function that shows data in the window_resolve
    char buffer[50];  //Shows data in the window_resolve
    sprintf(buffer, "%d", peek_workunits(head)); 
@@ -88,6 +93,11 @@ void update_window_resolve(app_widgets *app_wdgts, int time, Node** head){
    gtk_label_set_text((GtkLabel*)app_wdgts->numberoftermsdone_label, buffer);
    sprintf(buffer, "%d", peek_workunits(head)); 
    gtk_label_set_text((GtkLabel*)app_wdgts->workunits_label2, buffer);
+   sprintf(buffer, "%d", peek_priority(head)); 
+   gtk_label_set_text((GtkLabel*)app_wdgts->priority_label, buffer);
+ 
+   gtk_label_set_text((GtkLabel*)app_wdgts->algorithm_name, name);
+
    update(time);
 }
 
@@ -173,7 +183,7 @@ void execute_fcfs(app_widgets *app_wdgts, Node* arrivetime_queue)
 
     int sec = 0; // Time count  
 
-   update_window_resolve(app_wdgts, 1000000, &ready_queue); // Show data before do while
+   update_window_resolve(app_wdgts, 1000000, &ready_queue, "FCFS"); // Show data before do while
 
   do {
    printf("\n");
@@ -182,7 +192,7 @@ void execute_fcfs(app_widgets *app_wdgts, Node* arrivetime_queue)
 
    taylor_series(peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), &ready_queue); 
 
-   update_window_resolve(app_wdgts, 250000, &ready_queue);
+   update_window_resolve(app_wdgts, wait, &ready_queue, "FCFS");
 
    sec = sec + 1;
 
@@ -232,7 +242,7 @@ void execute_rr(app_widgets *app_wdgts, Node* arrivetime_queue)
 
   int sec = 0; // Time count  
 
-   update_window_resolve(app_wdgts, 1000000, &ready_queue); // Show data before do while
+   update_window_resolve(app_wdgts, 1000000, &ready_queue, "RR"); // Show data before do while
 
   do {
 if ((isEmpty(&ready_queue) && queue_turn == 1) || (isEmpty(&ready_queue2) && queue_turn == -1)) { 
@@ -245,13 +255,13 @@ printf("\n");
    printf("\n");
    printf("Process ID: %d", peek_id(&ready_queue)); 
       taylor_series(peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), &ready_queue); 
-      update_window_resolve(app_wdgts, 250000, &ready_queue);
+      update_window_resolve(app_wdgts, wait, &ready_queue, "RR");
    } else { // Turn of ready_queue2
      printf("\n");
      printf("\n");
      printf("Process ID: %d", peek_id(&ready_queue2)); 
        taylor_series(peek_workunits(&ready_queue2), peek_numberofterms(&ready_queue2), peek_sumpi(&ready_queue2), peek_fact(&ready_queue2), &ready_queue2); 
-       update_window_resolve(app_wdgts, 250000, &ready_queue2);
+       update_window_resolve(app_wdgts, wait, &ready_queue2, "RR");
    }
 
    sec = sec + 1;
@@ -358,6 +368,145 @@ if (!isEmpty(&arrivetime_queue)) {
   } while (!isEmpty(&ready_queue) || !isEmpty(&ready_queue2) || !isEmpty(&arrivetime_queue));
 }
 
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void execute_psrr(app_widgets *app_wdgts, Node* arrivetime_queue)
+// PSRR
+{
+  Node* ready_queue = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
+  pop(&arrivetime_queue); //remove head in arrivetime_queue 
+
+  Node* ready_queue2 = NULL; 
+
+  int queue_turn = 1;
+
+  int sec = 0; // Time count  
+
+   update_window_resolve(app_wdgts, 1000000, &ready_queue, "PSRR"); // Show data before do while
+
+  do {
+   if (queue_turn == 1) { // Turn of ready_queue 
+   printf("\n");
+   printf("\n");
+   printf("Process ID: %d", peek_id(&ready_queue)); 
+      taylor_series(peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), &ready_queue); 
+      update_window_resolve(app_wdgts, wait, &ready_queue, "PSRR");
+   } else { // Turn of ready_queue2
+     printf("\n");
+     printf("\n");
+     printf("Process ID: %d", peek_id(&ready_queue2)); 
+       taylor_series(peek_workunits(&ready_queue2), peek_numberofterms(&ready_queue2), peek_sumpi(&ready_queue2), peek_fact(&ready_queue2), &ready_queue2); 
+       update_window_resolve(app_wdgts, wait, &ready_queue2, "PSRR");
+   }
+
+   sec = sec + 1;
+if (queue_turn == 1) {
+   if (peek_numberofterms(&ready_queue) >= peek_workunits(&ready_queue)) { // If process finished all work
+      printf("\n");
+      printf("COMPLETE!!: %d", peek_id(&ready_queue));     
+      pop(&ready_queue); //remove head in ready_queue
+   } else {
+  printf("\n");
+  printf("PRIORITY: %d", peek_priority(&ready_queue)); 
+
+        if (isEmpty(&ready_queue2)) {
+          ready_queue2 = newNode_head(&ready_queue);
+        } else {
+          push_head(&ready_queue2, &ready_queue); //get head node from ready_queue 
+        }
+        pop(&ready_queue); //remove head in ready_queue
+   }
+} else {
+   if (peek_numberofterms(&ready_queue2) >= peek_workunits(&ready_queue2)) { // If process finished all work
+      printf("\n");
+      printf("COMPLETE!!: %d", peek_id(&ready_queue2));     
+      pop(&ready_queue2); //remove head in ready_queue2
+   } else {
+  printf("\n");
+  printf("PRIORITY: %d", peek_priority(&ready_queue2));
+
+        if (isEmpty(&ready_queue)) {
+          ready_queue = newNode_head(&ready_queue2);
+        } else {
+          push_head(&ready_queue, &ready_queue2); //get head node from ready_queue 
+        }
+        pop(&ready_queue2); //remove head in ready_queue
+   }
+}
+if (!isEmpty(&arrivetime_queue)) {
+   if (isEmpty(&ready_queue) && queue_turn == 1) { // ready_queue is empty and is turn of ready_queue
+      ready_queue = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
+      sec = peek_arrivetime(&arrivetime_queue);
+      printf("\n");
+      printf("actual_time: %d", sec); 
+      printf("\n");
+      printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue));
+      pop(&arrivetime_queue); //remove head in arrivetime_queue 
+   } else {
+
+     if (!isEmpty(&ready_queue) && queue_turn == 1) { // ready_queue is NOT empty and is turn of ready_queue
+        printf("\n");
+        printf("actual_time: %d", sec); 
+        printf("\n");
+        printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue));
+
+        if (peek_arrivetime(&arrivetime_queue) <= sec) {
+      push(&ready_queue, peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue  
+      pop(&arrivetime_queue); //remove head in arrivetime_queue 
+        }
+     }
+   }
+   if (isEmpty(&ready_queue2) && queue_turn == -1) { // ready_queue2 is empty and is turn of ready_queue2
+      ready_queue2 = newNode(peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue
+      sec = peek_arrivetime(&arrivetime_queue);
+      printf("\n");
+      printf("actual_time: %d", sec); 
+      printf("\n");
+      printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue));
+      pop(&arrivetime_queue); //remove head in arrivetime_queue 
+   } else {
+
+     if (!isEmpty(&ready_queue2) && queue_turn == -1) { // ready_queue2 is NOT empty and is turn of ready_queue2
+        printf("\n");
+        printf("actual_time: %d", sec); 
+        printf("\n");
+        printf("next arrivetime: %d", peek_arrivetime(&arrivetime_queue));
+
+        if (peek_arrivetime(&arrivetime_queue) <= sec) {
+      push(&ready_queue2, peek_id(&arrivetime_queue), peek_arrivetime(&arrivetime_queue), peek_workunits(&arrivetime_queue), peek_numberofterms(&arrivetime_queue), peek_sumpi(&arrivetime_queue), peek_fact(&arrivetime_queue), peek_optional(&arrivetime_queue), peek_optional(&arrivetime_queue)); //get head node from arrivetime_queue  
+      pop(&arrivetime_queue); //remove head in arrivetime_queue 
+        }
+     }
+   }
+}
+
+
+   if (queue_turn == 1 && (isEmpty(&ready_queue) || (peek_priority(&ready_queue2) < peek_priority(&ready_queue) && peek_priority(&ready_queue2) != -1))) { // turn of ready_queue and (ready_queue is empty or ready_queue2 head priority is more important)  
+  printf("\n");
+  printf("NEXT PRIORITY...: %d", peek_priority(&ready_queue2));
+   printf("\n");
+   printf("READY 1, TURN PASS"); 
+
+      queue_turn = queue_turn * -1; // Change queue turn
+
+   } else {
+
+     if (queue_turn == -1 && (isEmpty(&ready_queue2) || (peek_priority(&ready_queue) < peek_priority(&ready_queue2) && peek_priority(&ready_queue) != -1))) { // turn of ready_queue2 and (ready_queue2 is empty or ready_queue head priority is more important) 
+  printf("\n");
+  printf("NEXT PRIORITY...: %d", peek_priority(&ready_queue));
+   printf("\n");
+   printf("READY 2, TURN PASS"); 
+
+        queue_turn = queue_turn * -1; // Change queue turn
+
+     }
+
+   }
+ 
+  } while (!isEmpty(&ready_queue) || !isEmpty(&ready_queue2) || !isEmpty(&arrivetime_queue));
+}
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 void execute_MQS(app_widgets *app_wdgts)
@@ -379,7 +528,7 @@ void execute_MQS(app_widgets *app_wdgts)
             execute_ps(app_wdgts, arrivetime_queueMQS1);
             break;
         case 5:
-            //execute_psrr(app_wdgts, arrivetime_queueMQS1); 
+            execute_psrr(app_wdgts, arrivetime_queueMQS1); 
             break;
        }
   } 
@@ -399,7 +548,7 @@ void execute_MQS(app_widgets *app_wdgts)
             execute_ps(app_wdgts, arrivetime_queueMQS2);
             break;
         case 5: 
-            //execute_psrr(app_wdgts, arrivetime_queueMQS2); 
+            execute_psrr(app_wdgts, arrivetime_queueMQS2); 
             break;
        } 
   } 
@@ -419,7 +568,7 @@ void execute_MQS(app_widgets *app_wdgts)
             execute_ps(app_wdgts, arrivetime_queueMQS3);
             break;
         case 5: 
-            //execute_psrr(app_wdgts, arrivetime_queueMQS3); 
+            execute_psrr(app_wdgts, arrivetime_queueMQS3); 
             break;
        }
   }
@@ -437,7 +586,7 @@ void execute_MFQS(app_widgets *app_wdgts)
 
   int sec = 0; // Time count  
 
-   update_window_resolve(app_wdgts, 1000000, &ready_queueMQS1); // Show data before do while
+   update_window_resolve(app_wdgts, 1000000, &ready_queueMQS1, "MFQS"); // Show data before do while
 
   do {
 if ((isEmpty(&ready_queueMQS1) && queue_turn == 1) || (isEmpty(&ready_queue2) && queue_turn == -1)) { 
@@ -450,13 +599,13 @@ printf("\n");
    printf("\n");
    printf("Process ID: %d", peek_id(&ready_queueMQS1)); 
       taylor_series(peek_workunits(&ready_queueMQS1), peek_numberofterms(&ready_queueMQS1), peek_sumpi(&ready_queueMQS1), peek_fact(&ready_queueMQS1), &ready_queueMQS1); 
-      update_window_resolve(app_wdgts, 250000, &ready_queueMQS1);
+      update_window_resolve(app_wdgts, wait, &ready_queueMQS1, "MFQS");
    } else { // Turn of ready_queue2
      printf("\n");
      printf("\n");
      printf("Process ID: %d", peek_id(&ready_queue2)); 
        taylor_series(peek_workunits(&ready_queue2), peek_numberofterms(&ready_queue2), peek_sumpi(&ready_queue2), peek_fact(&ready_queue2), &ready_queue2); 
-       update_window_resolve(app_wdgts, 250000, &ready_queue2);
+       update_window_resolve(app_wdgts, wait, &ready_queue2, "MFQS");
    }
 
    sec = sec + 1;
@@ -605,7 +754,7 @@ if (!isEmpty(&arrivetime_queueMQS1)) {
             execute_ps(app_wdgts, arrivetime_queueMQS2);
             break;
         case 5: 
-            //execute_psrr(app_wdgts, arrivetime_queueMQS2); 
+            execute_psrr(app_wdgts, arrivetime_queueMQS2); 
             break;
        } 
   } 
@@ -625,7 +774,7 @@ if (!isEmpty(&arrivetime_queueMQS1)) {
             execute_ps(app_wdgts, arrivetime_queueMQS3);
             break;
         case 5: 
-            //execute_psrr(app_wdgts, arrivetime_queueMQS3); 
+            execute_psrr(app_wdgts, arrivetime_queueMQS3); 
             break;
        }
   }
@@ -659,7 +808,7 @@ Si arrivetime_queue no está vacío
 } While ready_queue no está vacío || arrivetime_queue no está vacío*/
   int sec = 0; // Time count  
 
-   update_window_resolve(app_wdgts, 1000000, &ready_queue); // Show data before do while
+   update_window_resolve(app_wdgts, 1000000, &ready_queue, "SJF"); // Show data before do while
 
   do {
    printf("\n");
@@ -668,7 +817,7 @@ Si arrivetime_queue no está vacío
 
    taylor_series(peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), &ready_queue); 
 
-   update_window_resolve(app_wdgts, 250000, &ready_queue);
+   update_window_resolve(app_wdgts, wait, &ready_queue, "SJF");
 
    sec = sec + 1;
 
@@ -722,7 +871,7 @@ void execute_ps(app_widgets *app_wdgts, Node* arrivetime_queue)
 
   int sec = 0; // Time count  
 
-   update_window_resolve(app_wdgts, 1000000, &ready_queue); // Show data before do while
+   update_window_resolve(app_wdgts, 1000000, &ready_queue, "PS"); // Show data before do while
 
   do {
    printf("\n");
@@ -731,7 +880,7 @@ void execute_ps(app_widgets *app_wdgts, Node* arrivetime_queue)
 
    taylor_series(peek_workunits(&ready_queue), peek_numberofterms(&ready_queue), peek_sumpi(&ready_queue), peek_fact(&ready_queue), &ready_queue); 
 
-   update_window_resolve(app_wdgts, 250000, &ready_queue);
+   update_window_resolve(app_wdgts, wait, &ready_queue, "PS");
 
    sec = sec + 1;
 
@@ -1143,6 +1292,7 @@ int readfile(GtkButton *button, app_widgets *app_wdgts)
                execute_ps(app_wdgts, arrivetime_queue);
          break;
      case 5: // PSRR Algorithm
+               execute_psrr(app_wdgts, arrivetime_queue);
          break;
      case 6: // MQS Algorithm FALTA AGREGAR CÓDIGO AQUÍ***********
       	       execute_MQS(app_wdgts);
@@ -1276,6 +1426,8 @@ void open_resolve_window (app_widgets *app_wdgts)
      app_wdgts->sumpi_label = GTK_WIDGET(gtk_builder_get_object(builder, "sumpi_label"));
      app_wdgts->numberoftermsdone_label = GTK_WIDGET(gtk_builder_get_object(builder, "numberoftermsdone_label"));
      app_wdgts->workunits_label2 = GTK_WIDGET(gtk_builder_get_object(builder, "workunits_label2"));
+     app_wdgts->algorithm_name = GTK_WIDGET(gtk_builder_get_object(builder, "algorithm_name")); 
+     app_wdgts->priority_label = GTK_WIDGET(gtk_builder_get_object(builder, "priority_label"));
 
      g_signal_connect (G_OBJECT (window_resolve), "destroy", G_CALLBACK (on_window_destroy), app_wdgts);  //Conectar señales
 
