@@ -1,7 +1,15 @@
-//#include <stdio.h>
 #include "queue.h"
 #include <gtk/gtk.h>
 #include <time.h>
+
+/*
+Tecnológico de Costa Rica Sede San José
+Curso: Principios de Sistemas Operativos GR 40
+Estudiantes: 
+- Ricardo Víquez Mora. Carnet: 2015013504
+- Edgar Parra Barillas. Carnet: 2016099061
+- Jefri Cárdenas. Carnet: 2013101392
+*/
 
 //To control the execution speed of algorithms
 int wait = 250000;
@@ -72,7 +80,7 @@ void execute_rr(app_widgets *app_wdgts, Node* arrivetime_queue);
 void execute_ps(app_widgets *app_wdgts, Node* arrivetime_queue); 
 void execute_psrr(app_widgets *app_wdgts, Node* arrivetime_queue);
 void execute_mqs(app_widgets *app_wdgts);
-//void execute_mfqs(app_widgets *app_wdgts);  SIN IMPLEMENTAR 
+void execute_mfqs(app_widgets *app_wdgts);   
 
 
 /*###########################################################################################################################################
@@ -977,7 +985,8 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
         *(arrivaltimes_array + cont) = i;            // put value i in array element cont
         cont = cont + 1;          
      }
-     if (cont < number_of_processes) { // File is incomplete
+     fscanf(file, "%d", &i);
+     if (i != -1) { // File is incomplete
        file_valid = 0; // Invalid file 
        error_message = "Incomplete File in “ARRIVAL TIMES OF THE PROCESSES” (Not valid)";
        return 0;
@@ -989,7 +998,8 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
         *(workunits_array + cont) = i;            // put value i in array element cont
         cont = cont + 1;          
      }
-     if (cont < number_of_processes) { // File is incomplete
+     fscanf(file, "%d", &i);
+     if (i != -1) { // File is incomplete
        file_valid = 0; // Invalid file 
        error_message = "Incomplete File in “WORK UNITS OF THE PROCESSES” (Not valid)";
        return 0;
@@ -1021,11 +1031,12 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
                *(priorities_array + cont) = i;            // put value i in array element cont
          cont = cont + 1;          
       }
-            if (cont < number_of_processes) { // File is incomplete
-              file_valid = 0; // Invalid file 
-              error_message = "Incomplete File in “PRIORITIES OF THE PROCESSES” (Not valid)";
-              return 0;
-            }
+     fscanf(file, "%d", &i);
+     if (i != -1) { // File is incomplete
+       file_valid = 0; // Invalid file 
+       error_message = "Incomplete File in “PRIORITIES OF THE PROCESSES” (Not valid)";
+       return 0;
+     }
       break;
   case 5: // PSRR Algorithm
       cont = 0; 
@@ -1034,11 +1045,12 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
                *(priorities_array + cont) = i;            // put value i in array element cont
          cont = cont + 1;          
       }
-            if (cont < number_of_processes) { // File is incomplete
-              file_valid = 0; // Invalid file 
-              error_message = "Incomplete File in “PRIORITIES OF THE PROCESSES” (Not valid)";
-              return 0;
-            }
+     fscanf(file, "%d", &i);
+     if (i != -1) { // File is incomplete
+       file_valid = 0; // Invalid file 
+       error_message = "Incomplete File in “PRIORITIES OF THE PROCESSES” (Not valid)";
+       return 0;
+     }
       break;
   case 6: // MQS Algorithm 
         cont = 0; 
@@ -1047,11 +1059,12 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
                *(priorities_array + cont) = i;            // put value i in array element cont
          cont = cont + 1;          
       }
-            if (cont < number_of_processes) { // File is incomplete
-              file_valid = 0; // Invalid file 
-              error_message = "Incomplete File in “PRIORITIES OF THE PROCESSES” (Not valid)";
-              return 0;
-            }
+     fscanf(file, "%d", &i);
+     if (i != -1) { // File is incomplete
+       file_valid = 0; // Invalid file 
+       error_message = "Incomplete File in “PRIORITIES OF THE PROCESSES” (Not valid)";
+       return 0;
+     }
 
         cont = 0; 
       while (cont < number_of_processes && (!feof (file))){ // OBTAIN QUEUES OF THE PROCESSES
@@ -1059,11 +1072,12 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
                *(queues_array + cont) = i;            // put value i in array element cont
          cont = cont + 1;          
       }
-            if (cont < number_of_processes) { // File is incomplete
-              file_valid = 0; // Invalid file 
-              error_message = "Incomplete File in “QUEUES OF THE PROCESSES” (Not valid)";
-              return 0;
-            }
+     fscanf(file, "%d", &i);
+     if (i != -1) { // File is incomplete
+       file_valid = 0; // Invalid file 
+       error_message = "Incomplete File in “QUEUES OF THE PROCESSES” (Not valid)";
+       return 0;
+     }
 
       fscanf(file, "%d", &i); //Get Sub-Algorithm1
       subalgorithm1 = i;
@@ -1113,11 +1127,12 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
                *(priorities_array + cont) = i;            // put value i in array element cont
          cont = cont + 1;          
       }
-            if (cont < number_of_processes) { // File is incomplete
-              file_valid = 0; // Invalid file 
-              error_message = "Incomplete File in “PRIORITIES OF THE PROCESSES” (Not valid)";
-              return 0;
-            }
+     fscanf(file, "%d", &i);
+     if (i != -1) { // File is incomplete
+       file_valid = 0; // Invalid file 
+       error_message = "Incomplete File in “PRIORITIES OF THE PROCESSES” (Not valid)";
+       return 0;
+     }
 
       fscanf(file, "%d", &i); //Get Sub-Algorithm1
       subalgorithm1 = i;
@@ -1142,9 +1157,7 @@ int getfiledata(char *filename,  app_widgets *app_wdgts)
             }
       arrivetime_queueMQS1 = newNode(0, *(arrivaltimes_array+0), *(workunits_array+0), 1, 0, 1, *(arrivaltimes_array+0), *(priorities_array+0)); //accommodate processes by arrival time
       for (int index = 1; index < number_of_processes; index++ ) {
-          push(&arrivetime_queueMQS1, index, *(arrivaltimes_array+index), *(workunits_array+index), 1, 0, 1, *(arrivaltimes_array+index), *(priorities_array+index)); //accommodate processes by arrival time
-          //push(&arrivetime_queueMQS1, index, *(arrivaltimes_array+index), *(workunits_array+index), 1, 0, 1, *(priorities_array+index), *(queues_array+index)); //accommodate processes by arrival time
-          
+          push(&arrivetime_queueMQS1, index, *(arrivaltimes_array+index), *(workunits_array+index), 1, 0, 1, *(arrivaltimes_array+index), *(priorities_array+index)); //accommodate processes by arrival time      
       } 
       fclose (file);
       return 0; 
